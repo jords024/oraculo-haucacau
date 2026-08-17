@@ -2356,5 +2356,132 @@
     "completedAt": "2026-08-17T18:01:22.858Z",
     "generationTimeSeconds": 152,
     "generationDuration": "2m 32s"
+  },
+  {
+    "id": "carrossel-57",
+    "title": "talvez você não esteja desconectada da sua espiritualidade.",
+    "theme": "talvez-voce-nao-esteja-desconectada-da-sua-espir",
+    "format": "ESPÍRITO",
+    "status": "rascunho",
+    "createdAt": "2026-08-17T18:21:53.362Z",
+    "slidesDir": "C:\\Users\\julia\\OneDrive\\Área de Trabalho\\carrossel-talvez-voce-nao-esteja-desconectada-da-sua-espir-talvez-voce-nao-esteja-desconectada-da-sua-espir",
+    "slidePrefix": "slide-",
+    "totalSlides": 0,
+    "imageQuality": "high",
+    "caption": "Tem gente chamando de crise espiritual o que começou como exaustão mental.\n\nA era moderna não invade só a agenda. Ela invade atenção, repouso e presença. Aos poucos, o dia inteiro vira resposta. Resposta para tela, para demanda, para urgência, para cobrança interna.\n\nE quando o sistema nervoso não desarma, até o silêncio parece longe.\n\nIsso não significa que sua espiritualidade sumiu. Significa que talvez seu corpo esteja há tempo demais em estado de cerco.\n\nExiste um momento em que buscar mais disciplina piora. Porque o que falta não é mais esforço. É um tipo diferente de energia. Mais limpa. Mais estável. Mais habitável.\n\nQuando o corpo sai do pico e da queda, a mente para de guerrear com tudo. E o que parecia distante começa a pousar de novo. Presença. Clareza. Escuta.\n\nTalvez o que você chama de desconexão seja só excesso de ruído. 🤎\n\n#exaustaomental #espiritualidade #femininosagrado #focolimpo #energiaestavel #cacau #autocuidado #sistemanervoso #presenca #haucacau",
+    "notes": "Comente CACAU se você sente que até o seu silêncio interno foi tomado pelo excesso",
+    "chatHistory": [],
+    "slides": [],
+    "noImageSlidesCount": 4,
+    "imageProvider": "gpt-image-2",
+    "copyModel": "gpt-5.4",
+    "lastPayload": {
+      "title": "talvez você não esteja desconectada da sua espiritualidade.",
+      "theme": "talvez-voce-nao-esteja-desconectada-da-sua-espir",
+      "format": "ESPÍRITO",
+      "caption": "Tem gente chamando de crise espiritual o que começou como exaustão mental.\n\nA era moderna não invade só a agenda. Ela invade atenção, repouso e presença. Aos poucos, o dia inteiro vira resposta. Resposta para tela, para demanda, para urgência, para cobrança interna.\n\nE quando o sistema nervoso não desarma, até o silêncio parece longe.\n\nIsso não significa que sua espiritualidade sumiu. Significa que talvez seu corpo esteja há tempo demais em estado de cerco.\n\nExiste um momento em que buscar mais disciplina piora. Porque o que falta não é mais esforço. É um tipo diferente de energia. Mais limpa. Mais estável. Mais habitável.\n\nQuando o corpo sai do pico e da queda, a mente para de guerrear com tudo. E o que parecia distante começa a pousar de novo. Presença. Clareza. Escuta.\n\nTalvez o que você chama de desconexão seja só excesso de ruído. 🤎\n\n#exaustaomental #espiritualidade #femininosagrado #focolimpo #energiaestavel #cacau #autocuidado #sistemanervoso #presenca #haucacau",
+      "notes": "Comente CACAU se você sente que até o seu silêncio interno foi tomado pelo excesso",
+      "revisor_score": "14/15",
+      "slides": [
+        {
+          "num": "01",
+          "estado": "DISRUPO",
+          "layout": "identidade_oficial",
+          "title": "talvez você não esteja desconectada da sua espiritualidade.",
+          "body": "talvez esteja apenas mentalmente sitiada",
+          "prompt": "Retrato editorial fine art de uma mulher mística serena, olhos semicerrados, pele iluminada por um facho solar Laranja HauCacau #F05B00, fundo de aura turquesa Teal #18B0AC dissolvendo em sombras profundas Marinho #0F1F3F, detalhes orgânicos bioluminescentes sutis ao redor da cabeça.",
+          "preset": "identidade_oficial"
+        },
+        {
+          "num": "02",
+          "estado": "DESCIDA",
+          "layout": "identidade_oficial",
+          "title": "seu cansaço não nasceu do nada",
+          "body": "existe um ponto em que a mente para de pedir descanso e começa a implorar por silêncio. quando tudo vira estímulo, até a alma parece distante. você não estava errada em sentir que algo se perdeu.",
+          "prompt": "fundo escuro com textura sutil",
+          "preset": "identidade_oficial"
+        },
+        {
+          "num": "03",
+          "estado": "NOMEAO",
+          "layout": "identidade_oficial",
+          "title": "seu foco virou mercado",
+          "body": "desde os anos 2000, plataformas digitais passaram a disputar atenção como ativo econômico. notificações, rolagem infinita e recompensa variável foram desenhadas para prolongar permanência. não é só distração. é engenharia de captura.",
+          "prompt": "Colagem editorial entre tela luminosa fragmentada e símbolos ancestrais do olho interno, com feixes laranja #F05B00 cortando um campo turquesa #18B0AC e sombras marinho #0F1F3F.",
+          "preset": "identidade_oficial"
+        },
+        {
+          "num": "04",
+          "estado": "PROFUNDIDADE",
+          "layout": "identidade_oficial",
+          "title": "um cérebro sitiado não sustenta presença",
+          "body": "atenção fragmentada aumenta carga cognitiva, eleva vigilância e dificulta estados de repouso profundo. sem repouso, o sistema nervoso continua em alerta. e um corpo em alerta constante interpreta até o sagrado como mais uma tarefa para performar.",
+          "prompt": "fundo escuro pesado",
+          "preset": "identidade_oficial"
+        },
+        {
+          "num": "05",
+          "estado": "QUEDA FUNDA",
+          "layout": "identidade_oficial",
+          "title": "então você transforma busca em desempenho",
+          "body": "no fundo, existe uma parte sua que tenta merecer paz sendo impecável. você organiza, produz, responde, estuda, melhora. e chama de caminho espiritual a mesma exigência que está te secando por dentro.",
+          "prompt": "fundo escuro denso",
+          "preset": "identidade_oficial"
+        },
+        {
+          "num": "06",
+          "estado": "ESPELHO",
+          "layout": "identidade_oficial",
+          "title": "você já tentou descansar sem largar o personagem",
+          "body": "você se deita, mas continua se administrando. observa a própria respiração como quem cobra resultado. existe uma parte de você que não sabe mais receber presença sem transformar isso em meta.",
+          "prompt": "fundo escuro neutro",
+          "preset": "identidade_oficial"
+        },
+        {
+          "num": "07",
+          "estado": "ASCENSO",
+          "layout": "identidade_oficial",
+          "title": "a saída começa no corpo antes de voltar ao espírito",
+          "body": "primeiro, reduza choque e aceleração. depois, ofereça ao sistema um estado de foco estável, sem pico e sem queda brusca. quando o corpo sai do cerco, a percepção volta a abrir espaço para silêncio, rito e clareza.",
+          "prompt": "Mulher em pé com expressão serena, mãos próximas ao coração, envolta por névoa orgânica turquesa bioluminescente, atravessada por um facho âmbar #F05B00 sobre fundo marinho profundo #0F1F3F.",
+          "preset": "identidade_oficial"
+        },
+        {
+          "num": "08",
+          "estado": "CRISTALIZAO",
+          "layout": "identidade_oficial",
+          "title": "nem toda distância do sagrado é ausência de fé",
+          "body": "às vezes, é excesso de ruído. às vezes, é um sistema nervoso cansado demais para ouvir o que sempre esteve ali.",
+          "prompt": "Composição etérea de aura turquesa luminosa emergindo da escuridão marinho, partículas douradas suaves e atmosfera contemplativa, sem excesso, com presença feminina implícita e orgânica.",
+          "preset": "identidade_oficial"
+        },
+        {
+          "num": "09",
+          "estado": "SETUP CTA",
+          "layout": "identidade_oficial",
+          "title": "existe um ritual simples para sair do ruído sem violentar o corpo",
+          "body": "eu mapeei uma forma de recuperar foco limpo e energia constante sem entregar seu dia ao pico nervoso que cobra depois. quando a mente desacelera sem apagar, o campo inteiro muda de lugar.",
+          "prompt": "Mesa ritual contemporânea com xícara escura fumegante, texturas naturais, brilho bioluminescente turquesa discreto e luz âmbar #F05B00 atravessando sombras profundas.",
+          "preset": "identidade_oficial"
+        },
+        {
+          "num": "10",
+          "estado": "CTA FIXO",
+          "layout": "identidade_oficial",
+          "title": "COMENTE\nCACAU",
+          "body": "E eu te envio a indicação e como tomar o Pote de Cacau 100% Puro HauCacau para ter foco limpo, energia constante e desarmar a exaustão no seu dia a dia.",
+          "prompt": "O Pote de Cacau 100% Puro HauCacau em destaque sob iluminação Caravaggio chiaroscuro, facho de luz âmbar solar #F05B00 cortando o fundo escuro com sombras profundas e textura real da embalagem. ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
+          "preset": "identidade_oficial"
+        }
+      ],
+      "totalSlides": 10,
+      "imageQuality": "high",
+      "noImageSlidesCount": 4,
+      "preset": "identidade_oficial"
+    },
+    "generationStartedAt": 1786990913370,
+    "completedAt": "2026-08-17T18:26:05.097Z",
+    "generationTimeSeconds": 252,
+    "generationDuration": "4m 12s"
   }
 ]

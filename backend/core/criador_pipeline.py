@@ -114,7 +114,7 @@ def fetch_image_for_slide(args_tuple):
     idx, s = args_tuple
     layout = s.get("layout", "fullbleed")
     preset = s.get("preset", "identidade_oficial")
-    if layout == "text_only" or (preset in ["criativo_papel", "editorial_paper"] and idx in [2, 3, 5, 8]):
+    if layout == "text_only" or (preset in ["criativo_papel", "editorial_paper"] and idx in [2, 3, 5, 8]) or (preset == "identidade_oficial" and idx > 1):
         return idx, None
     prompt = s.get("prompt", "")
     s_title = s.get("title", "")
@@ -219,12 +219,11 @@ def main():
         if layout_mode == "text_only" or (preset in ["criativo_papel", "editorial_paper"] and idx in [2, 3, 5, 8]):
             img_bytes = None
 
-        if not img_bytes and layout_mode not in ["text_only", "editorial_paper"]:
+        if not img_bytes and layout_mode not in ["text_only", "editorial_paper", "identidade_oficial"]:
             out({"type": "slide", "num": idx, "total": total, "estado": estado,
                  "status": "erro", "msg": "Falha na geração de imagem"})
             continue
 
-        preset = s.get("preset", "dramatico")
         try:
             final_img = compose(img_bytes, s_title, body, layout_mode, preset, slide_idx=idx)
         except Exception as e:
