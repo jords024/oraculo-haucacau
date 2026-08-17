@@ -3,7 +3,7 @@ import { useScrollLock } from '../hooks/useScrollLock';
 import PipelineModal from './PipelineModal';
 import { customFetch } from '../utils/customFetch';
 
-function GeneratingBadge({ startedAt }) {
+function GeneratingBadge({ startedAt, carousel }) {
   const [elapsed, setElapsed] = useState(0);
 
   useEffect(() => {
@@ -24,12 +24,32 @@ function GeneratingBadge({ startedAt }) {
 
   const mins = Math.floor(elapsed / 60);
   const secs = elapsed % 60;
-  const formatted = mins > 0 ? `${mins}m ${secs}s` : `${secs}s`;
+  const formattedTime = mins > 0 ? `${mins}m ${secs}s` : `${secs}s`;
+
+  const totalSlides = Number(carousel?.totalSlides) || 10;
+  const currentSlidesCount = Array.isArray(carousel?.slides) ? carousel.slides.length : 0;
+  const progressPercent = Math.min(100, Math.round((currentSlidesCount / totalSlides) * 100));
 
   return (
-    <span className="badge badge-generating" style={{ background: 'rgba(234, 179, 8, 0.2)', color: '#facc15', border: '1px solid rgba(250, 204, 21, 0.4)', fontWeight: 'bold' }}>
-      ⏳ gerando... ({formatted})
-    </span>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', minWidth: '160px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <span className="badge badge-generating" style={{ background: 'rgba(240, 91, 0, 0.15)', color: 'var(--gold, #F05B00)', border: '1px solid rgba(240, 91, 0, 0.4)', fontWeight: 'bold', fontSize: '11px', padding: '3px 8px', borderRadius: '4px' }}>
+          ⚡ Gerando artes: {currentSlidesCount}/{totalSlides} ({progressPercent}%)
+        </span>
+        <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)', fontWeight: '500' }}>{formattedTime}</span>
+      </div>
+      <div style={{ width: '100%', height: '5px', background: 'rgba(255, 255, 255, 0.1)', borderRadius: '3px', overflow: 'hidden' }}>
+        <div 
+          style={{ 
+            height: '100%', 
+            width: `${Math.max(5, progressPercent)}%`, 
+            background: 'linear-gradient(90deg, #F05B00 0%, #18B0AC 100%)', 
+            borderRadius: '3px', 
+            transition: 'width 0.5s ease-in-out' 
+          }} 
+        />
+      </div>
+    </div>
   );
 }
 
@@ -549,7 +569,7 @@ export default function Dashboard({
                         )}
                         <span className="badge badge-format">F: {c.format}</span>
                         {c.status === 'generating' ? (
-                          <GeneratingBadge startedAt={c.generationStartedAt} />
+                          <GeneratingBadge startedAt={c.generationStartedAt} carousel={c} />
                         ) : c.status === 'queued' ? (
                           <span className="badge" style={{ background: 'rgba(234, 179, 8, 0.2)', color: '#facc15', border: '1px solid rgba(250, 204, 21, 0.4)', fontWeight: 'bold' }}>
                             ⏳ em fila

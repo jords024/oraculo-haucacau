@@ -312,11 +312,21 @@ export default function App() {
     }
   };
 
-  const handleStartGeneration = async (carouselText, carouselId = null) => {
+  const handleStartGeneration = async (carouselText, carouselId = null, extraOpts = {}) => {
     const payload = parseCarouselText(carouselText);
     if (payload.slides.length === 0) {
-      alert('Não consegui extrair slides do carrossel!');
+      showToast('⚠️ Não foram encontrados slides formatados para geração.', 'error');
       return;
+    }
+
+    const currentStyle = extraOpts?.visualStyle || localStorage.getItem('haucacau_visual_style') || 'criativo_papel';
+    payload.preset = currentStyle;
+    if (payload.slides && payload.slides.length > 0) {
+      payload.slides = payload.slides.map(s => ({
+        ...s,
+        preset: currentStyle,
+        layout: s.layout || (currentStyle === 'criativo_papel' ? 'editorial_paper' : 'dramatico')
+      }));
     }
 
     if (carouselId) {
@@ -329,20 +339,23 @@ export default function App() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
-      if (res.ok) {
-        showToast('✦ Pipeline de geração iniciado!');
-        loadCarousels();
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data.ok) {
+        showToast('✦ Pipeline de geração iniciado com sucesso!');
+        await loadCarousels();
         setActiveTab('carrosseis');
+      } else {
+        showToast(`Erro ao iniciar pipeline: ${data.error || data.detail || 'Erro no servidor'}`);
       }
     } catch (e) {
-      showToast('Erro ao iniciar pipeline.');
+      showToast('Erro de conexão ao iniciar pipeline.');
     }
   };
 
   const handleStartMockGeneration = async (carouselText, carouselId = null) => {
     const payload = parseCarouselText(carouselText);
     if (payload.slides.length === 0) {
-      alert('Não consegui extrair slides do carrossel!');
+      showToast('⚠️ Não foram encontrados slides formatados para geração rápida.', 'error');
       return;
     }
 
@@ -356,15 +369,16 @@ export default function App() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
+      const data = await res.json().catch(() => ({}));
       if (res.ok) {
         showToast('⚡ Pipeline de geração rápida (mock) concluído!');
+        await loadCarousels();
         setActiveTab('carrosseis');
       } else {
-        const err = await res.json();
-        showToast(`Erro ao criar design rápido: ${err.error || err.detail}`);
+        showToast(`Erro ao criar design rápido: ${data.error || data.detail}`);
       }
     } catch (e) {
-      showToast('Erro ao iniciar pipeline rápido.');
+      showToast('Erro de conexão ao iniciar pipeline rápido.');
     }
   };
 

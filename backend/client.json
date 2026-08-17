@@ -2,27 +2,27 @@
   "_comment": "Camada narrativa da plataforma. Todos os agentes leem daqui. Para replicar para outro cliente: duplique este arquivo, preencha os campos e aponte o servidor para ele.",
 
   "meta": {
-    "clientId": "fonte-oculta",
-    "clientName": "Fonte Oculta",
-    "handle": "@afonteoculta",
-    "creator": "Jordão",
+    "clientId": "haucacau",
+    "clientName": "Hau Cacau",
+    "handle": "@haucacau.brasil",
+    "creator": "Oráculo",
     "language": "pt-BR",
     "version": "1.0.0",
-    "createdAt": "2026-05-24"
+    "createdAt": "2026-08-05"
   },
 
   "brand": {
     "niche": [
-      "espiritualidade",
-      "epigenética",
-      "frequência",
-      "traumas",
-      "dinheiro",
-      "consciência"
+      "ritmo circadiano",
+      "ansiedade velada",
+      "cansaço crônico",
+      "foco limpo sem cafeína",
+      "cacau ancestral",
+      "presença física no corpo"
     ],
-    "product": "Tecnologia Sonora / Desbloqueio Neural",
-    "cta_keyword": "FONTE",
-    "enemy": "Sistema educacional / indústria da autoajuda / sistema financeiro / herança epigenética",
+    "product": "Pote de Cacau 100% Puro HauCacau",
+    "cta_keyword": "CACAU",
+    "enemy": "Estimulantes sintéticos / picos de cortisol por cafeína / rotina acelerada sem presença",
 
     "avatar": {
       "dor_atual": "Preso em padrão que não quebra. Já tentou autoajuda, afirmações, terapia.",
@@ -122,10 +122,10 @@
       "s10": {
         "mode": "image",
         "layout": "fullbleed",
-        "image_concept": "portal dourado puro",
-        "title_fixed": "COMENTE\nFONTE",
-        "body_template": "E eu te envio a {product} capaz de {resultado_pilar} usando o {mechanism}.",
-        "mechanism": "Desbloqueio Neural"
+        "image_concept": "Pote de Cacau 100% Puro HauCacau em destaque com iluminação Caravaggio facho de luz solar âmbar",
+        "title_fixed": "COMENTE\nCACAU",
+        "body_template": "E eu te envio o link exclusivo para adquirir o Pote de Cacau 100% Puro HauCacau e restaurar seu foco limpo e energia sustentável sem picos de ansiedade.",
+        "mechanism": "Cacau Ancestral 100% Puro"
       }
     },
     "presets": {

@@ -42,9 +42,10 @@ def main():
     w_txt = args.watermark_text if args.watermark_text is not None and args.watermark_text.strip() != "" else None
 
     img_bytes = Path(args.image).read_bytes() if args.layout != "text_only" else None
+    title_clean = args.title.replace("\\n", "\n")
     result = compose(
         img_bytes=img_bytes,
-        title=args.title,
+        title=title_clean,
         body=args.body,
         layout=args.layout,
         preset_name=args.preset,

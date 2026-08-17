@@ -1203,7 +1203,23 @@ Jamais entregue os slides apenas como texto corrido ou apenas **SX:** sem as cha
   }
 
   const OPENAI_URL = 'https://api.openai.com/v1/chat/completions';
-  const OPENAI_MODEL = process.env.COPY_GENERATION_MODEL || 'gpt-4o';
+  let rawModel = (req.body.model || process.env.COPY_GENERATION_MODEL || 'gpt-4o').trim();
+  let OPENAI_MODEL = rawModel;
+  
+  const modelMap = {
+    'gpt-5.4': 'gpt-5.4',
+    'gpt-5': 'gpt-5',
+    'gpt-5-mini': 'gpt-5-mini',
+    'gpt-5.4-mini': 'gpt-5.4-mini',
+    'gpt-4o': 'gpt-4o',
+    'gpt-4o-mini': 'gpt-4o-mini',
+    'o1-mini': 'o1-mini',
+    'o3-mini': 'o3-mini',
+    'o1': 'o1'
+  };
+  if (modelMap[rawModel.toLowerCase()]) {
+    OPENAI_MODEL = modelMap[rawModel.toLowerCase()];
+  }
 
   try {
     const formattedMessages = messages.map(msg => ({
@@ -1220,8 +1236,8 @@ Jamais entregue os slides apenas como texto corrido ou apenas **SX:** sem as cha
         stream: true,
       };
 
-      // Modelos o1, o3 ou gpt-5 não suportam alteração de temperatura na API da OpenAI
-      const isReasoningModel = OPENAI_MODEL.startsWith('o1-') || OPENAI_MODEL.startsWith('o3-') || OPENAI_MODEL.startsWith('gpt-5');
+      // Modelos o1, o3, gpt-5 não suportam alteração de temperatura na API da OpenAI (apenas default 1)
+      const isReasoningModel = OPENAI_MODEL.includes('o1') || OPENAI_MODEL.includes('o3') || OPENAI_MODEL.includes('gpt-5') || OPENAI_MODEL.includes('5');
       if (!isReasoningModel) {
         payload.temperature = 0.88;
       }
@@ -1231,6 +1247,16 @@ Jamais entregue os slides apenas como texto corrido ou apenas **SX:** sem as cha
         headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
+
+      // Se a OpenAI retornar HTTP 400 por parâmetro de temperatura, tenta novamente sem a temperatura
+      if (!response.ok && response.status === 400 && payload.temperature) {
+        delete payload.temperature;
+        response = await fetch(OPENAI_URL, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+      }
     } catch (fetchErr) {
       // Erro de rede (DNS, conexão recusada, timeout, etc.)
       const cause = fetchErr.cause?.message || fetchErr.cause?.code || '';

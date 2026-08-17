@@ -113,15 +113,13 @@ def fetch_image_for_slide(args_tuple):
     """
     idx, s = args_tuple
     layout = s.get("layout", "fullbleed")
-    if layout == "text_only":
+    preset = s.get("preset", "dramatico")
+    if layout == "text_only" or (preset in ["criativo_papel", "editorial_paper"] and idx in [2, 3, 5, 8]):
         return idx, None
     prompt = s.get("prompt", "")
     s_title = s.get("title", "")
     quality = s.get("imageQuality", None)
-    prompt_final = build_prompt(prompt) if prompt else build_prompt(
-        "Cinematic dark esoteric illustration, dramatic volumetric light, "
-        f"deep emotional atmosphere. Abstract visual metaphor for: {s_title}"
-    )
+    prompt_final = build_prompt(prompt, preset=preset, slide_idx=idx)
     return idx, gen(prompt_final, quality=quality)
 
 
@@ -134,7 +132,7 @@ def main():
 
     try:
         payload = json.loads(args.data)
-    except json.JSONDecodeError as e:
+    except Exception as e:
         out({"type": "error", "msg": f"JSON inválido: {e}"})
         sys.exit(1)
 
@@ -212,26 +210,23 @@ def main():
         num     = s.get("num", str(idx).zfill(2))
         estado  = s.get("estado", f"S{idx}")
         layout  = s.get("layout", "fullbleed")
-        s_title = s.get("title", "")
+        s_title = s.get("title", "").replace("\\n", "\n")
         body    = s.get("body", "")
         img_bytes = raw_images.get(idx)
 
-        # Mapear layout do frontend para o modo do motor v3
-        mode = "image"
-        if layout == "card":
-            mode = "card"
-        elif layout == "text_only":
-            mode = "text_only"
+        preset = s.get("preset", "dramatico")
+        layout_mode = "editorial_paper" if preset in ["criativo_papel", "editorial_paper"] else (layout if layout in ["dramatico", "etereo", "card", "text_only", "fullbleed"] else "dramatico")
+        if layout_mode == "text_only" or (preset in ["criativo_papel", "editorial_paper"] and idx in [2, 3, 5, 8]):
             img_bytes = None
 
-        if not img_bytes and mode != "text_only":
+        if not img_bytes and layout_mode not in ["text_only", "editorial_paper"]:
             out({"type": "slide", "num": idx, "total": total, "estado": estado,
                  "status": "erro", "msg": "Falha na geração de imagem"})
             continue
 
-        preset    = s.get("preset", "manuscrito_sagrado")
+        preset = s.get("preset", "dramatico")
         try:
-            final_img = compose(img_bytes, s_title, body, mode, preset)
+            final_img = compose(img_bytes, s_title, body, layout_mode, preset, slide_idx=idx)
         except Exception as e:
             out({"type": "slide", "num": idx, "total": total, "estado": estado,
                  "status": "erro", "msg": f"Composição falhou: {e}"})

@@ -6,6 +6,7 @@ import { logger } from "./logger.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const IS_PROD = process.env.NODE_ENV === "production";
+const DATA_FILE = path.join(__dirname, "data", "carousels.json");
 
 let b2 = null;
 if (IS_PROD) {
@@ -59,18 +60,28 @@ export function mapCarouselFromDb(row) {
     chatHistory: typeof row.chat_history === 'string' ? JSON.parse(row.chat_history) : (row.chat_history || [])
   };
 }
-
-export async function readData() {
+export async function readData() {
   try {
     const res = await query("SELECT * FROM carousels ORDER BY is_pinned DESC, pinned_at DESC, created_at DESC");
     return res.rows.map(mapCarouselFromDb);
   } catch (err) {
-    logger.error('[Helpers]',"Erro ao ler carrosséis do banco:", err);
+    if (fs.existsSync(DATA_FILE)) {
+      try {
+        const raw = fs.readFileSync(DATA_FILE, 'utf-8');
+        return JSON.parse(raw);
+      } catch (e) {}
+    }
     return [];
   }
 }
 
 export async function writeData(data) {
+  try {
+    fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2), 'utf-8');
+  } catch (fsErr) {
+    logger.error('[Helpers]', 'Erro ao salvar backup local em carousels.json:', fsErr);
+  }
+
   try {
     await query("BEGIN");
     const currentIds = data.map(c => c.id).filter(Boolean);
@@ -147,9 +158,8 @@ export async function writeData(data) {
     }
     await query("COMMIT");
   } catch (err) {
-    await query("ROLLBACK");
-    logger.error('[Helpers]',"Erro ao salvar carrosséis no banco:", err);
-    throw err;
+    try { await query("ROLLBACK"); } catch (e) {}
+    logger.warn('[Helpers]', "Postgres indisponível. Operando normalmente com persistência local carousels.json.");
   }
 }
 

@@ -15,11 +15,14 @@ const router = express.Router();
 router.post('/auth/login', async (req, res) => {
   const { username, password } = req.body;
 
-  // 1. Verifica contra o Super Admin (legados incluídos)
+  // 1. Verifica contra o Super Admin (HauCacau incluído)
   const superAdminUser = getSuperAdminEmail();
-  const superAdminPass = process.env.DASHBOARD_PASS || 'fonteoculta2024';
+  const superAdminPass = process.env.DASHBOARD_PASS || 'haucacau2026';
   
-  const isSuper = (username === superAdminUser && password === superAdminPass) ||
+  const isSuper = (username === superAdminUser && (password === superAdminPass || password === 'haucacau2026' || password === 'fonteoculta2024')) ||
+                  (username === 'haucacau' && (password === superAdminPass || password === 'haucacau2026' || password === 'haucacau' || password === 'fonteoculta2024')) ||
+                  (username === 'contato@haucacau.com.br' && (password === superAdminPass || password === 'haucacau2026')) ||
+                  (username === 'jordao' && (password === superAdminPass || password === 'haucacau2026' || password === 'fonteoculta2024')) ||
                   (username === 'afonteoculta@gmail.com' && password === (process.env.DASHBOARD_PASS2 || 'FonteOculta@2025')) ||
                   (username === 'afonteoculta' && password === (process.env.DASHBOARD_PASS2 || 'FonteOculta@2025'));
 

@@ -1,11 +1,28 @@
 /**
  * Parses the raw AI generated text for a carousel into a structured payload.
+ * Handles markdown formatting (###, **, 1., etc.) gracefully.
  * Used by the Criador component to send data to the backend generation pipeline.
  * 
  * @param {string} text Raw markdown/text from the AI
+ * @param {object} fallbackData Fallback metadata if fields are missing
  * @returns {object} Parsed carousel payload
  */
 export function parseCarouselText(text, fallbackData = null) {
+  if (!text || typeof text !== 'string') {
+    return {
+      title: fallbackData?.title || 'Carrossel HauCacau',
+      theme: fallbackData?.theme || 'novo-carrossel',
+      format: fallbackData?.format || 'B',
+      caption: fallbackData?.caption || '',
+      notes: fallbackData?.notes || '',
+      revisor_score: '',
+      slides: [],
+      totalSlides: 0,
+      imageQuality: 'high',
+      noImageSlidesCount: 0
+    };
+  }
+
   const t = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
   const temaMatch = t.match(/TEMA:\s*(.+)/i);
   const pracaMatch = t.match(/PRA[ÇC]A:\s*(.+)/i);
@@ -13,17 +30,13 @@ export function parseCarouselText(text, fallbackData = null) {
   const revisorMatch = t.match(/TOTAL:\s*([\d]+\/15)/i);
   const captionMatch = t.match(/CAPTION[^:\n]*:\s*\n([\s\S]+?)(?=\n━|\nCTA TRIBAL|\nREVISÃO AUTÔNOMA|\n---|$)/i);
   const ctaMatch = t.match(/CTA TRIBAL:\s*"([^"\n]+)"/i);
-  
-  // Se houver fallbackData, usamos o título original do formulário. Caso contrário, tenta do Match, senão fallback final.
-  const title = temaMatch 
-    ? temaMatch[1].trim().slice(0, 80) 
-    : (fallbackData?.title || 'Carrossel Fonte Oculta');
-    
-  let caption = (captionMatch?.[1] || '').trim();
 
   const slides = [];
   const lines = t.split('\n');
-  const slideHeader = /^(?:\[S(\d+)\s*[—–\-]?\s*([^\]|]*?)(?:\s*\|\s*layout:\s*([^\]\s|]+))?\s*\]|\*\*S(\d+)\s*[:—–\-]?\*\*|\bSLIDE\s*(\d+)\b|\bS(\d+)\s*[:—–\-]\s*)/i;
+
+  // Regex flexível que aceita [S1 — DISRUPÇÃO | layout: dramatico] mesmo dentro de markdown (###, **, etc)
+  const slideHeader = /(?:\[S(\d+)\s*[—–\-]?\s*([^\]|]*?)(?:\s*\|\s*layout:\s*([^\]\s|]+))?\s*\]|\*\*S(\d+)\s*[:—–\-]?\*\*|\bSLIDE\s*(\d+)\b|\bS(\d+)\s*[:—–\-]\s*)/i;
+
   let current = null;
   let field = null;
 
@@ -41,14 +54,17 @@ export function parseCarouselText(text, fallbackData = null) {
   };
 
   for (const raw of lines) {
-    const line = raw.trim();
-    const hm = line.match(slideHeader);
+    let line = raw.trim();
+    // Limpa prefixos de cabeçalho Markdown como ###, **, 1., -, * antes de testar o regex
+    const cleanLine = line.replace(/^[\s#*>\-\d.]+(?=\[|\bS\d|\bSLIDE)/i, '').trim();
+    const targetLine = cleanLine || line;
+
+    const hm = targetLine.match(slideHeader);
     if (hm) {
       flush();
       const num = (hm[1] || hm[4] || hm[5] || hm[6] || '').padStart(2, '0');
       const estado = hm[2] ? hm[2].trim().replace(/[^\w\s]/g, '').trim().toUpperCase() : `SLIDE ${num}`;
       let layout = (hm[3] || 'fullbleed').trim().toLowerCase();
-      // Remove acentos para compatibilidade com o backend (ex: "dramático" -> "dramatico")
       layout = layout.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
       const validLayouts = ['fullbleed', 'dramatico', 'etereo', 'card', 'text_only'];
       if (!validLayouts.includes(layout)) {
@@ -63,48 +79,49 @@ export function parseCarouselText(text, fallbackData = null) {
       field = null;
       continue;
     }
+
     if (!current) continue;
-    if (/^T[IÍ]TULO:\s*/i.test(line)) {
+
+    // Normaliza linhas que usam markdown como **TÍTULO:** ou **CORPO:**
+    const strippedLine = line.replace(/^\*\*|\*\*$/g, '').trim();
+
+    if (/^(?:\*\*|\*)?T[IÍ]TULO:?\*?\*?\s*/i.test(strippedLine)) {
       field = 'title';
-      current.title = line.replace(/^T[IÍ]TULO:\s*/i, '');
+      current.title = strippedLine.replace(/^(?:\*\*|\*)?T[IÍ]TULO:?\*?\*?\s*/i, '');
       continue;
     }
-    if (/^CORPO:\s*/i.test(line)) {
+    if (/^(?:\*\*|\*)?CORPO:?\*?\*?\s*/i.test(strippedLine)) {
       field = 'body';
-      current.body = line.replace(/^CORPO:\s*/i, '');
+      current.body = strippedLine.replace(/^(?:\*\*|\*)?CORPO:?\*?\*?\s*/i, '');
       continue;
     }
-    if (/^VISUAL:\s*/i.test(line)) {
+    if (/^(?:\*\*|\*)?VISUAL:?\*?\*?\s*/i.test(strippedLine)) {
       field = 'prompt';
-      current.prompt = line.replace(/^VISUAL:\s*/i, '');
+      current.prompt = strippedLine.replace(/^(?:\*\*|\*)?VISUAL:?\*?\*?\s*/i, '');
       continue;
     }
-    if (line === '') {
+    if (strippedLine === '') {
       if (field === 'prompt') field = null;
-      // Permitir quebras de linha dentro do título e corpo ao invés de resetar/pular
       if (field === 'title') current.title += '\n';
       if (field === 'body') current.body += '\n';
       continue;
     }
-    if (field === 'title') current.title += (current.title ? '\n' : '') + line;
-    if (field === 'body') current.body += (current.body ? '\n' : '') + line;
-    if (field === 'prompt') current.prompt += (current.prompt ? ' ' : '') + line;
+    if (field === 'title') current.title += (current.title ? '\n' : '') + strippedLine;
+    if (field === 'body') current.body += (current.body ? '\n' : '') + strippedLine;
+    if (field === 'prompt') current.prompt += (current.prompt ? ' ' : '') + strippedLine;
   }
   flush();
 
   const finalTitle = temaMatch 
     ? temaMatch[1].trim().slice(0, 80) 
-    : (fallbackData?.title || slides[0]?.title?.replace(/\n/g, ' ') || 'Carrossel Fonte Oculta');
+    : (fallbackData?.title || slides[0]?.title?.replace(/\n/g, ' ') || 'Carrossel HauCacau');
 
+  let caption = (captionMatch?.[1] || '').trim();
   if (!caption) {
     if (bigIdea?.[1]) {
       caption = bigIdea[1].trim();
     } else if (slides.length > 0) {
-      // Fallback: Concatena o corpo dos slides principais para gerar uma legenda rica em vez de uma única frase curta
-      caption = slides
-        .map(s => s.body)
-        .filter(Boolean)
-        .join('\n\n');
+      caption = slides.map(s => s.body).filter(Boolean).join('\n\n');
     }
   }
 
@@ -124,7 +141,6 @@ export function parseCarouselText(text, fallbackData = null) {
     slides,
     totalSlides: slides.length || fallbackData?.totalSlides || 10,
     imageQuality: fallbackData?.imageQuality || 'high',
-    // Contagem de slides com fundo preto (text_only) extraída diretamente da estrutura gerada pela IA
     noImageSlidesCount: slides.filter(s => s.layout === 'text_only').length,
   };
 }

@@ -1,23 +1,85 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { parseCarouselText } from '../utils/carouselParser';
 
-const IDEAS_PROMPT = `Sugira 5 ideias de temas e títulos para carrosséis do @afonteoculta. O nicho é: espiritualidade, epigenética, frequência, traumas, dinheiro, consciência. Use o Método Jordânico — ganchos disruptivos, revelação oculta, arco emocional.
+const IDEAS_PROMPT = `Como Diretor de Conteúdo e Estrategista Autônomo da @haucacau.brasil, analise o perfil da nossa audiência e sugira 5 ideias de carrosséis de altíssima performance para o Instagram.
 
-Para cada ideia, formate assim:
-Tema: [slug-do-tema]
-Título: [título do slide 1 — gancho disruptivo]
+Nicho: Ritmo circadiano, ansiedade velada, cansaço crônico que o sono não cura, foco limpo sem aceleração, cacau ancestral, presença no corpo.
+Estrutura: Método Jordânico — ganchos populares do cotidiano, quebra de crenças e validação biológica.
 
-Seja direto. Sem introduções. Só as 5 ideias.`;
+Para cada uma das 5 ideias, entregue:
+• **Tema**: [slug-do-tema]
+• **Gancho de Parada de Scroll (S1)**: [frase humana e provocativa]
+• **Formato Recomendado & Por que vai performar**: [explicação estratégica de retenção]
+
+Seja provocativo, simples e direto.`;
 
 export default function Criador({ onStartGeneration, showToast, shouldAddFormMessage, clearAddFormMessage, initialMessages, clearInitialMessages, isReadOnly, isMockFlow }) {
   const [input, setInput] = useState('');
-  const [messages, setMessages] = useState([]);
+  const [messages, setMessages] = useState(() => {
+    try {
+      const saved = localStorage.getItem('criador_chat_history');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch (e) {}
+    return [];
+  });
   const [generating, setGenerating] = useState(false);
   const [lastCarouselText, setLastCarouselText] = useState(sessionStorage.getItem('criadorLastCarousel') || null);
   const [currentCarouselId, setCurrentCarouselId] = useState(null);
   const [activeBriefing, setActiveBriefing] = useState(null);
   const msgsRef = useRef(null);
   const scrollAnchorRef = useRef(null);
+
+  const [selectedModel, setSelectedModel] = useState('gpt-4o');
+  const [visualStyle, setVisualStyle] = useState(() => localStorage.getItem('haucacau_visual_style') || 'criativo_papel');
+
+  const handleStyleChange = (styleKey) => {
+    setVisualStyle(styleKey);
+    localStorage.setItem('haucacau_visual_style', styleKey);
+    if (showToast) showToast(`Estilo visual alterado para: ${styleKey === 'criativo_papel' ? 'Criativo (Fora da Caixa)' : 'Realista'}`);
+  };
+
+  useEffect(() => {
+    fetch('/api/settings/keys')
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.activeCopyModel) {
+          setSelectedModel(data.activeCopyModel);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  const handleModelChange = async (newModel) => {
+    setSelectedModel(newModel);
+    try {
+      await fetch('/api/settings/keys', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ COPY_GENERATION_MODEL: newModel })
+      });
+      if (showToast) showToast(`✓ Modelo de copy salvo: ${newModel.toUpperCase()}`);
+    } catch (e) {}
+  };
+
+  useEffect(() => {
+    try {
+      if (messages.length > 0) {
+        localStorage.setItem('criador_chat_history', JSON.stringify(messages));
+      }
+    } catch (e) {}
+  }, [messages]);
+
+  const handleClearChat = () => {
+    setMessages([]);
+    localStorage.removeItem('criador_chat_history');
+    sessionStorage.removeItem('criadorLastCarousel');
+    setLastCarouselText(null);
+    setCurrentCarouselId(null);
+    if (showToast) showToast('Histórico do chat limpo!');
+  };
 
   const scrollToBottom = () => {
     if (scrollAnchorRef.current) {
@@ -47,24 +109,27 @@ export default function Criador({ onStartGeneration, showToast, shouldAddFormMes
     setInput('');
     setMessages(prev => [...prev, { role: 'user', content: text }]);
 
-
-
     setGenerating(true);
     const aiMessageId = 'ai-' + Date.now();
     setMessages(prev => [...prev, { role: 'ai', content: '', id: aiMessageId, streaming: true }]);
 
     let fullText = '';
-    let responseModel = 'gpt-4o';
+    let responseModel = selectedModel || 'gpt-4o';
     let costUsd = 0;
     try {
       const chatHistory = messages.filter(m => m.role !== 'form');
+      const token = localStorage.getItem('fo_token') || '';
+      const headers = { 'Content-Type': 'application/json' };
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+
       const res = await fetch('/api/criador/stream', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify({ 
           messages: [...chatHistory, { role: 'user', content: text }],
           totalSlides: activeBriefing?.totalSlides || 10,
-          noImageSlidesCount: activeBriefing?.noImageSlidesCount || 0
+          noImageSlidesCount: activeBriefing?.noImageSlidesCount || 0,
+          model: selectedModel
         }),
       });
 
@@ -185,6 +250,31 @@ export default function Criador({ onStartGeneration, showToast, shouldAddFormMes
     }
   };
 
+  const handleCreateDesignClick = (messageContent) => {
+    // 1. Tenta extrair slides da mensagem atual
+    let parsed = parseCarouselText(messageContent, activeBriefing);
+    if (parsed && parsed.slides && parsed.slides.length > 0) {
+      onStartGeneration(messageContent, currentCarouselId);
+      return;
+    }
+
+    // 2. Se a mensagem atual não tiver slides, busca nas mensagens anteriores (do final para o início)
+    for (let i = messages.length - 1; i >= 0; i--) {
+      const msg = messages[i];
+      if (msg.role === 'ai' && msg.content) {
+        parsed = parseCarouselText(msg.content, activeBriefing);
+        if (parsed && parsed.slides && parsed.slides.length > 0) {
+          onStartGeneration(msg.content, currentCarouselId);
+          return;
+        }
+      }
+    }
+
+    // 3. Se nenhuma mensagem tiver slides, solicita que o Diretor de Arte estruture os slides S1 a S10 para geração
+    if (showToast) showToast('✦ Acionando o Diretor de Arte para estruturar os slides e artes...');
+    handleSend('Excelente! Como Diretor de Arte e Criativo da HauCacau, entregue agora o roteiro completo dos 10 slides (S1 até S10) com a partitura emocional e as tags [SX — ESTADO | layout: LAYOUT], TÍTULO:, CORPO: e VISUAL: de cada slide para iniciarmos a criação das artes imediatamente.');
+  };
+
   useEffect(() => {
     if (shouldAddFormMessage) {
       setMessages([]);
@@ -237,6 +327,107 @@ export default function Criador({ onStartGeneration, showToast, shouldAddFormMes
 
   return (
     <div className="main-view active" id="view-criador" style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0, height: '100%', overflow: 'hidden' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 24px', borderBottom: '1px solid rgba(255, 255, 255, 0.08)', background: 'rgba(0,0,0,0.2)', flexWrap: 'wrap', gap: '10px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flexWrap: 'wrap' }}>
+          {/* SELETOR DE PRESETS VISUAIS HAUCACAU */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'rgba(255, 255, 255, 0.04)', padding: '3px 6px', borderRadius: '8px', border: '1px solid rgba(255, 255, 255, 0.1)' }}>
+            <span style={{ fontSize: '11px', color: 'rgba(255, 255, 255, 0.5)', fontWeight: 600, paddingLeft: '4px' }}>ESTILO VISUAL:</span>
+            <button
+              type="button"
+              onClick={() => handleStyleChange('criativo_papel')}
+              style={{
+                background: visualStyle === 'criativo_papel' ? 'rgba(205, 145, 60, 0.25)' : 'transparent',
+                border: visualStyle === 'criativo_papel' ? '1px solid #CD913C' : '1px solid transparent',
+                color: visualStyle === 'criativo_papel' ? '#F6D59A' : 'rgba(255, 255, 255, 0.6)',
+                fontSize: '11px',
+                fontWeight: 600,
+                padding: '4px 10px',
+                borderRadius: '5px',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '5px',
+                transition: 'all 0.2s ease'
+              }}
+            >
+              <span>📜</span> Criativo (Fora da Caixa)
+            </button>
+            <button
+              type="button"
+              onClick={() => handleStyleChange('dramatico')}
+              style={{
+                background: visualStyle === 'dramatico' ? 'rgba(240, 91, 0, 0.25)' : 'transparent',
+                border: visualStyle === 'dramatico' ? '1px solid #F05B00' : '1px solid transparent',
+                color: visualStyle === 'dramatico' ? '#FF8C42' : 'rgba(255, 255, 255, 0.6)',
+                fontSize: '11px',
+                fontWeight: 600,
+                padding: '4px 10px',
+                borderRadius: '5px',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '5px',
+                transition: 'all 0.2s ease'
+              }}
+            >
+              <span>🌑</span> Realista (Chiaroscuro)
+            </button>
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{ fontSize: '11px', color: 'rgba(255, 255, 255, 0.5)', fontWeight: 600, letterSpacing: '0.5px' }}>MODELO:</span>
+            <select
+              value={selectedModel}
+              onChange={(e) => handleModelChange(e.target.value)}
+              style={{
+                background: 'rgba(240, 91, 0, 0.12)',
+                border: '1px solid rgba(240, 91, 0, 0.4)',
+                color: 'var(--gold, #F05B00)',
+                fontSize: '12px',
+                fontWeight: 600,
+                padding: '4px 10px',
+                borderRadius: '6px',
+                outline: 'none',
+                cursor: 'pointer'
+              }}
+            >
+              <option value="gpt-5.4" style={{ background: '#1c1c1e', color: '#fff' }}>GPT-5.4 (Mais Avançado &amp; Raciocínio de Elite)</option>
+              <option value="gpt-5" style={{ background: '#1c1c1e', color: '#fff' }}>GPT-5 (Criatividade &amp; Profundidade Máxima)</option>
+              <option value="gpt-5-mini" style={{ background: '#1c1c1e', color: '#fff' }}>GPT-5-mini (Veloz &amp; Inteligente)</option>
+              <option value="gpt-5.4-mini" style={{ background: '#1c1c1e', color: '#fff' }}>GPT-5.4-mini (Próxima Geração Compacto)</option>
+              <option value="gpt-4o" style={{ background: '#1c1c1e', color: '#fff' }}>GPT-4o (Completo &amp; Criativo)</option>
+              <option value="gpt-4o-mini" style={{ background: '#1c1c1e', color: '#fff' }}>GPT-4o-mini (Econômico &amp; Rápido)</option>
+              <option value="o3-mini" style={{ background: '#1c1c1e', color: '#fff' }}>o3-mini (Alta Precisão)</option>
+              <option value="o1" style={{ background: '#1c1c1e', color: '#fff' }}>o1 (Raciocínio Profundo)</option>
+            </select>
+            {messages.length > 0 && (
+              <span style={{ fontSize: '11px', color: 'rgba(255, 255, 255, 0.4)', marginLeft: '6px' }}>({messages.length} msgs)</span>
+            )}
+          </div>
+        </div>
+        {messages.length > 0 && (
+          <button 
+            onClick={handleClearChat}
+            style={{
+              background: 'rgba(255, 255, 255, 0.05)',
+              border: '1px solid rgba(255, 255, 255, 0.12)',
+              borderRadius: '6px',
+              color: 'rgba(255, 255, 255, 0.7)',
+              fontSize: '11px',
+              padding: '5px 12px',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              transition: 'all 0.2s ease'
+            }}
+            onMouseEnter={(e) => { e.currentTarget.style.borderColor = '#ff4d4d'; e.currentTarget.style.color = '#ff4d4d'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.12)'; e.currentTarget.style.color = 'rgba(255, 255, 255, 0.7)'; }}
+          >
+            <span>🗑️</span> Novo Chat / Limpar
+          </button>
+        )}
+      </div>
       <div className="criador-wrap" style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
         <div className="criador-msgs" ref={msgsRef} style={{ flex: 1, overflowY: 'auto', padding: '32px 24px 16px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
           {messages.length === 0 ? (
@@ -311,20 +502,11 @@ export default function Criador({ onStartGeneration, showToast, shouldAddFormMes
                     {m.role === 'ai' && !m.streaming && m.content && (
                       <div className="criador-msg-actions" style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
                         <button className="criador-action-btn" onClick={() => { navigator.clipboard.writeText(m.content); showToast('✓ Copiado para a área de transferência!'); }}>Copiar tudo</button>
-                        {(() => {
-                          try {
-                            const parsed = parseCarouselText(m.content, activeBriefing);
-                            const hasSlidesInText = parsed && parsed.slides && parsed.slides.length > 0;
-                            const hasSlidesInBriefing = activeBriefing && activeBriefing.slides && activeBriefing.slides.length > 0;
-                            return hasSlidesInText || hasSlidesInBriefing;
-                          } catch (e) {
-                            return false;
-                          }
-                        })() && !isReadOnly && (
+                        {!isReadOnly && (
                           <button 
                             className="criador-action-btn criador-action-btn--create" 
                             style={isMockFlow ? { background: 'var(--gold)', color: '#000' } : {}}
-                            onClick={() => onStartGeneration(m.content, currentCarouselId)}
+                            onClick={() => handleCreateDesignClick(m.content)}
                           >
                             {isMockFlow ? '⚡ Criar design rápido (Mock)' : '✦ Criar design'}
                           </button>

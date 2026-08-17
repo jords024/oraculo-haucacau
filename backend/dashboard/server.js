@@ -167,14 +167,13 @@ setInterval(async () => {
 }, 60000); // Roda a cada 60 segundos
 
 // ── Start ────────────────────────────────────────────────────────────────────
-initDb().then(() => {
-  resetBackupScheduler();
-  initCarouselQueueWorker();
+initDb().catch(err => {
+  logger.warn('[SERVER]', '⚠️ Banco de dados Postgres não detectado. Operando em modo de arquivos locais (carousels.json / client.json).');
+}).finally(() => {
+  try { resetBackupScheduler(); } catch (e) {}
+  try { initCarouselQueueWorker(); } catch (e) {}
   app.listen(PORT, () => {
     const env = process.env.NODE_ENV || 'development';
     logger.info('[SERVER]', `✅ Oráculo Dashboard iniciado — porta: ${PORT} | ambiente: ${env}`);
   });
-}).catch(err => {
-  logger.error('[SERVER]', '❌ Falha crítica ao inicializar banco de dados:', err);
-  process.exit(1);
 });

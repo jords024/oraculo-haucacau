@@ -55,14 +55,14 @@ export default function Login({ onSuccess }) {
   };
 
   const renderBrand = () => {
-    if (!companyName) return <><em>Oculta</em></>;
-    const words = companyName.trim().split(/\s+/);
+    const name = companyName || 'Hau Cacau';
+    const words = name.trim().split(/\s+/);
     if (words.length > 1) {
       const lastWord = words.pop();
       const firstPart = words.join(' ');
       return <>{firstPart}<br /><em>{lastWord}</em></>;
     }
-    return <em>{companyName}</em>;
+    return <em>{name}</em>;
   };
 
   return (
@@ -321,7 +321,7 @@ export default function Login({ onSuccess }) {
 
         {error && <div className="error-msg">{error}</div>}
 
-        <div className="footer-note">@afonteoculta · Plataforma Interna</div>
+        <div className="footer-note">@haucacau.brasil · Plataforma Interna</div>
       </div>
     </div>
   );

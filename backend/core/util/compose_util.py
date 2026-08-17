@@ -131,13 +131,30 @@ PRESETS = {
     },
 
     # ── NOVA VARIAÇÃO 1 — DRAMÁTICO ───────────────────────────────────────────
+    "criativo_papel": {
+        "bg"              : (248, 246, 240, 255),
+        "title_color"     : (24,   30,  56, 255),
+        "body_color"      : (24,   30,  56, 255),
+        "bold_color"      : (24,   30,  56, 255),
+        "italic_color"    : (80,   85, 110, 255),
+        "watermark_color" : (110, 115, 135, 230),
+        "card_bg"         : (248, 246, 240, 255),
+        "card_border"     : (190, 140,  70, 160),
+        "accent_gold"     : (205, 145,  60, 255),
+        "accent_teal"     : (24,  176, 172, 160),
+        "title_px"        : 54,
+        "title_min_px"    : 44,
+        "body_px"         : 42,
+        "body_min_px"     : 36,
+        "is_light"        : True,
+    },
     "dramatico": {
         "bg"              : (4,   2,   2,  255),
         "title_color"     : (255, 255, 255, 255),
         "body_color"      : (235, 228, 218, 255),
         "bold_color"      : (255, 248, 220, 255),
         "italic_color"    : (255, 235, 190, 255),
-        "watermark_color" : (200, 170,  90, 170),
+        "watermark_color" : (240,  91,   0, 200),
         "card_bg"         : (8,   4,   2,  255),
         "card_border"     : (180, 130,  40,  80),
         "gradient_tint"   : (18,   6,   2),
@@ -511,7 +528,7 @@ def make_cosmic_bg(preset: dict, img_bytes=None):
 # ── LAYOUTS ───────────────────────────────────────────────────────────────────
 
 def compose_fullbleed(img_bytes, title, body, preset: dict, title_y=None, body_y=None, watermark_pos="top_left", watermark_x=None, watermark_y=None, watermark_text=None):
-    """Layout fullbleed: imagem full + gradiente + texto LEFT embaixo."""
+    """Layout fullbleed: imagem full + gradiente + texto LEFT embaixo + linha de acento Laranja HauCacau."""
     p   = preset
     bg  = Image.open(BytesIO(img_bytes)).convert("RGBA").resize((W, H), Image.LANCZOS)
     bg  = fill_edges_black(bg)
@@ -524,15 +541,15 @@ def compose_fullbleed(img_bytes, title, body, preset: dict, title_y=None, body_y
     draw = ImageDraw.Draw(bg)
     _watermarks(draw, p["watermark_color"], pos=watermark_pos, x=watermark_x, y=watermark_y, text=watermark_text)
 
-    t_start = min(p["title_px"], 80)
+    t_start = max(p["title_px"], 84)
     t_min   = p["title_min_px"]
     b_sz    = p["body_px"]
     gap     = 22
 
-    t_sz = fit_title_size(draw, title, t_start, t_min, align="center")
+    t_sz = fit_title_size(draw, title, t_start, t_min, align="left")
 
     def calc_heights(ts, bs):
-        lht = line_px_height(draw, ts) * 1.18
+        lht = line_px_height(draw, ts) * 1.12
         lhb = line_px_height(draw, bs) * 1.55
         nt  = sum(len(wrap_markup_lines(draw, ln, ts, MAX_TW_L)) or 1
                   for ln in title.split("\n"))
@@ -542,8 +559,8 @@ def compose_fullbleed(img_bytes, title, body, preset: dict, title_y=None, body_y
 
     th, bh = calc_heights(t_sz, b_sz)
 
-    BOTTOM_PAD  = 80
-    Y_MIN       = int(H * 0.62)
+    BOTTOM_PAD  = 72
+    Y_MIN       = int(H * 0.58)
     custom_y    = int(title_y) if (title_y is not None and str(title_y).strip() != "") else None
     effective_y_min = custom_y if (custom_y is not None and custom_y < Y_MIN) else Y_MIN
     MAX_TEXT_H  = H - effective_y_min - BOTTOM_PAD
@@ -562,22 +579,26 @@ def compose_fullbleed(img_bytes, title, body, preset: dict, title_y=None, body_y
         y     = max(y_raw, Y_MIN)
 
     rendered_title_y_end = render_title(draw, title, t_sz, MARGIN_L, y, p["title_color"],
-                                        ls=1.18, align="center")
-    final_body_y = int(body_y) if body_y is not None and str(body_y).strip() != "" else max(980, rendered_title_y_end + gap)
+                                        ls=1.12, align="left")
+    
+    # Linha de acento Laranja HauCacau (#F05B00)
+    accent_y = rendered_title_y_end + 12
+    draw.rectangle([MARGIN_L, accent_y, MARGIN_L + 120, accent_y + 5], fill=(240, 91, 0, 255))
+
+    final_body_y = int(body_y) if body_y is not None and str(body_y).strip() != "" else (accent_y + 22)
     render_markup_block(draw, body, b_sz, MARGIN_L, final_body_y, p,
-                        ls=1.55, align="center")
+                        ls=1.55, align="left")
     return bg.convert("RGB")
 
 
 def compose_dramatico(img_bytes, title, body, preset: dict, title_y=None, body_y=None, watermark_pos="top_left", watermark_x=None, watermark_y=None, watermark_text=None):
     """
-    Variação 1 — DRAMÁTICO
-    Imagem full + grain + gradiente extra-longo + texto ESQUERDA + fontes grandes.
-    Para SISTEMA, CORPO, ALAVANCA.
+    Variação 1 — DRAMÁTICO (Estilo HauCacau Oficial)
+    Imagem full + grain + gradiente extra-longo + texto ESQUERDA + linha Laranja HauCacau.
     """
     p   = preset
     bg  = Image.open(BytesIO(img_bytes)).convert("RGBA").resize((W, H), Image.LANCZOS)
-    bg  = fill_edges_black(bg)           # elimina bordas brancas da API
+    bg  = fill_edges_black(bg)
     bg  = dark_gradient(bg, p)
     if p.get("vignette"):
         bg = add_vignette(bg, strength=0.30)
@@ -587,13 +608,13 @@ def compose_dramatico(img_bytes, title, body, preset: dict, title_y=None, body_y
     draw = ImageDraw.Draw(bg)
     _watermarks(draw, p["watermark_color"], pos=watermark_pos, x=watermark_x, y=watermark_y, text=watermark_text)
 
-    t_sz = fit_title_size(draw, title, p["title_px"], p["title_min_px"], align="left")
+    t_sz = fit_title_size(draw, title, max(p["title_px"], 84), p["title_min_px"], align="left")
     b_sz = p["body_px"]
     gap  = 26
 
     def calc_heights_d(ts, bs):
-        lht = line_px_height(draw, ts) * 1.18
-        lhb = line_px_height(draw, bs) * 1.58
+        lht = line_px_height(draw, ts) * 1.12
+        lhb = line_px_height(draw, bs) * 1.55
         nt  = sum(len(wrap_markup_lines(draw, ln, ts, MAX_TW_L)) or 1
                   for ln in title.split("\n"))
         nb  = sum(len(wrap_markup_lines(draw, ln, bs, MAX_TW_L)) or 1
@@ -602,13 +623,11 @@ def compose_dramatico(img_bytes, title, body, preset: dict, title_y=None, body_y
 
     th, bh = calc_heights_d(t_sz, b_sz)
 
-    # ── Zona de texto: de Y_MIN (66%) até H − BOTTOM_PAD
-    # MAX_TEXT_H derivado da geometria real — garante que texto NUNCA ultrapassa H − 96px
-    BOTTOM_PAD  = 96
-    Y_MIN       = int(H * 0.66)           # 891px
+    BOTTOM_PAD  = 72
+    Y_MIN       = int(H * 0.58)
     custom_y    = int(title_y) if (title_y is not None and str(title_y).strip() != "") else None
     effective_y_min = custom_y if (custom_y is not None and custom_y < Y_MIN) else Y_MIN
-    MAX_TEXT_H  = H - effective_y_min - BOTTOM_PAD  # zona real disponível
+    MAX_TEXT_H  = H - effective_y_min - BOTTOM_PAD
 
     while (th + bh + gap) > MAX_TEXT_H and b_sz > p["body_min_px"]:
         b_sz -= 1
@@ -617,7 +636,6 @@ def compose_dramatico(img_bytes, title, body, preset: dict, title_y=None, body_y
         t_sz -= 2
         th, bh = calc_heights_d(t_sz, b_sz)
 
-    # ── Bloco nunca começa antes de 66% (zona escura do gradiente) ──────────
     if title_y is not None and str(title_y).strip() != "":
         y = int(title_y)
     else:
@@ -625,10 +643,15 @@ def compose_dramatico(img_bytes, title, body, preset: dict, title_y=None, body_y
         y     = max(y_raw, Y_MIN)
 
     rendered_title_y_end = render_title(draw, title, t_sz, MARGIN_L, y, p["title_color"],
-                                        ls=1.18, align="left")
-    final_body_y = int(body_y) if body_y is not None and str(body_y).strip() != "" else max(970, rendered_title_y_end + gap)
+                                        ls=1.12, align="left")
+    
+    # Linha de acento Laranja HauCacau (#F05B00)
+    accent_y = rendered_title_y_end + 12
+    draw.rectangle([MARGIN_L, accent_y, MARGIN_L + 120, accent_y + 5], fill=(240, 91, 0, 255))
+
+    final_body_y = int(body_y) if body_y is not None and str(body_y).strip() != "" else (accent_y + 22)
     render_markup_block(draw, body, b_sz, MARGIN_L, final_body_y, p,
-                        ls=1.58, align="left")
+                        ls=1.55, align="left")
     return bg.convert("RGB")
 
 
@@ -782,22 +805,269 @@ def compose_card(img_bytes, title, body, preset: dict, title_y=None, body_y=None
     return canvas.convert("RGB")
 
 
+def make_coldpressed_paper_canvas():
+    base = np.full((H, W, 3), [248, 245, 238], dtype=np.float32)
+    np.random.seed(42)
+    fine_grain = np.random.normal(0, 4.0, (H, W, 3))
+    fiber_mask = (np.random.rand(H, W, 1) > 0.992) * np.random.uniform(8.0, 18.0, (H, W, 1))
+    y_coords = np.arange(H).reshape(H, 1, 1)
+    page_lines = (np.sin(y_coords * 0.14) > 0.6) * np.random.uniform(1.2, 3.5, (H, W, 1))
+    paper = np.clip(base - fiber_mask - page_lines + fine_grain, 0, 255).astype(np.uint8)
+    img = Image.fromarray(paper, "RGB")
+    
+    vignette = Image.new("L", (W, H), 0)
+    v_draw = ImageDraw.Draw(vignette)
+    v_draw.rectangle([0, 0, W, H], fill=255)
+    v_draw.rectangle([80, 80, W - 80, H - 80], fill=0)
+    vignette = vignette.filter(ImageFilter.GaussianBlur(radius=90))
+    tint = Image.new("RGB", (W, H), (232, 225, 212))
+    return Image.composite(tint, img, vignette)
+
+def draw_seed_of_life_geom(draw, cx, cy, r=120, color=(195, 145, 75, 140)):
+    import math
+    for angle in range(0, 360, 60):
+        rad = math.radians(angle)
+        ox = cx + r * math.cos(rad)
+        oy = cy + r * math.sin(rad)
+        draw.ellipse([ox - r, oy - r, ox + r, oy + r], outline=color, width=2)
+    draw.ellipse([cx - r, cy - r, cx + r, cy + r], outline=color, width=2)
+
+def draw_cacao_sacred_symbol(draw, cx, cy, size=160):
+    import math
+    color = (24, 30, 56, 170)
+    gold = (205, 145, 60, 180)
+    p1 = (cx, cy - size)
+    p2 = (cx + size * 0.866, cy + size * 0.5)
+    p3 = (cx - size * 0.866, cy + size * 0.5)
+    draw.polygon([p1, p2, p3], outline=gold, width=2)
+    p4 = (cx, cy + size)
+    p5 = (cx + size * 0.866, cy - size * 0.5)
+    p6 = (cx - size * 0.866, cy - size * 0.5)
+    draw.polygon([p4, p5, p6], outline=gold, width=2)
+    draw.ellipse([cx - 40, cy - 65, cx + 40, cy + 65], outline=color, width=2)
+    draw.ellipse([cx - 22, cy - 65, cx + 22, cy + 65], outline=color, width=1)
+    draw.line([(cx, cy - 65), (cx, cy + 65)], fill=color, width=1)
+
+def wrap_words_bound(draw, text, font, max_w=840):
+    words = text.split(" ")
+    lines, curr = [], []
+    for w in words:
+        test = " ".join(curr + [w])
+        bbox = draw.textbbox((0, 0), test, font=font)
+        if (bbox[2] - bbox[0]) <= max_w:
+            curr.append(w)
+        else:
+            if curr: lines.append(" ".join(curr))
+            curr = [w]
+    if curr: lines.append(" ".join(curr))
+    return lines
+
+def compose_editorial_paper(img_bytes, title, body, preset: dict, title_y=None, body_y=None, watermark_pos="top_left", watermark_x=None, watermark_y=None, watermark_text=None, slide_idx=1):
+    """
+    MOTOR OFICIAL: EDITORIAL MÍSTICO EM PAPEL (HauCacau Criativo Fora da Caixa)
+    - S1: Recorte da Deusa Mística + Círculo Celestial Sagrado + Selo Biologia Sagrada + Título em Caixa Baixa com Grifo Ouro/Teal.
+    - S2 / S5: Texto Puro Editorial Centralizado com Espaçamento Dinâmico Perfeito.
+    - S3: Gravura Ancestral de Cacau + Merkabah em Nanquim Dourado.
+    - S4 / S7: Portal Fine Art Flutuante com Sombra Suave.
+    """
+    bg = make_coldpressed_paper_canvas()
+    draw = ImageDraw.Draw(bg, "RGBA")
+    
+    font_title = ImageFont.truetype(F_BOLD, 54)
+    font_body = ImageFont.truetype(F_BOLD, 48)
+    font_body_reg = ImageFont.truetype(F_REGULAR, 40)
+    font_eyebrow = ImageFont.truetype(F_BOLD, 20)
+    font_sub = ImageFont.truetype(F_REGULAR, 18)
+    font_badge = ImageFont.truetype(F_BOLD, 15)
+    
+    DEEP_INDIGO = (24, 30, 56, 255)
+    HAU_GOLD = (205, 145, 60, 255)
+    HAU_GOLD_MUTED = (190, 140, 70, 160)
+    TEAL_MIST = (24, 176, 172, 160)
+    
+    # ── SLIDE 1 (HOOK: COLAGEM MÍSTICA & DEUSA SAGRADA) ──────────────────────
+    if slide_idx == 1:
+        # Header Left
+        draw.text((96, 76), "HAUCACAU", font=font_eyebrow, fill=(110, 115, 135, 240))
+        draw.line([(96, 108), (210, 108)], fill=HAU_GOLD_MUTED, width=2)
+        
+        # Title (Left-aligned, Lowercase, with Double Underline)
+        clean_title = title.lower() if title else "e se o seu cansaço não for falta de esforço..."
+        lines = wrap_words_bound(draw, clean_title, font_title, max_w=760)
+        cur_y = 150
+        for line in lines:
+            draw.text((96, cur_y), line, font=font_title, fill=DEEP_INDIGO)
+            cur_y += 68
+            
+        # Double Underline under the last line of title
+        if lines:
+            last_line = lines[-1]
+            l_bbox = draw.textbbox((96, cur_y - 68), last_line, font=font_title)
+            lw = l_bbox[2] - l_bbox[0]
+            uy = cur_y - 4
+            draw.rectangle([96, uy, 96 + lw, uy + 3], fill=HAU_GOLD)
+            draw.rectangle([96, uy + 6, 96 + (lw * 0.45), uy + 8], fill=TEAL_MIST)
+            
+        # Sacred Celestial Ring & Badge (Right side, lower down so NO collision)
+        ring_cx, ring_cy = 840, 590
+        draw_seed_of_life_geom(draw, ring_cx, ring_cy, r=115, color=(205, 155, 75, 120))
+        
+        # Badge "BIOLOGIA SAGRADA"
+        badge_text = "BIOLOGIA SAGRADA"
+        b_bbox = draw.textbbox((0, 0), badge_text, font=font_badge)
+        bw = b_bbox[2] - b_bbox[0]
+        bx = ring_cx - (bw // 2) - 14
+        by = ring_cy - 150
+        draw.rounded_rectangle([bx, by, bx + bw + 28, by + 32], radius=16, outline=HAU_GOLD_MUTED, width=1)
+        draw.text((bx + 14, by + 7), badge_text, font=font_badge, fill=DEEP_INDIGO)
+        
+        # Woman Cutout / Foreground Silhouette
+        if img_bytes:
+            try:
+                raw = Image.open(BytesIO(img_bytes)).convert("RGBA")
+                arr = np.array(raw).astype(np.float32)
+                # Soft luminance transparency against bright background
+                lum = 0.299 * arr[:, :, 0] + 0.587 * arr[:, :, 1] + 0.114 * arr[:, :, 2]
+                alpha = np.clip((250 - lum) * 3.5, 0, 255).astype(np.uint8)
+                raw.putalpha(Image.fromarray(alpha, "L"))
+                
+                # Resize and paste in bottom left
+                target_w = 780
+                target_h = int(raw.size[1] * (target_w / raw.size[0]))
+                raw_scaled = raw.resize((target_w, target_h), Image.LANCZOS)
+                
+                bg.paste(raw_scaled, (60, H - target_h + 30), raw_scaled)
+            except Exception:
+                pass
+                
+        # Footer
+        draw.text((820, 1250), "@HAUCACAU", font=font_eyebrow, fill=DEEP_INDIGO)
+        draw.text((820, 1278), "ESTADO DE PRESENÇA", font=font_sub, fill=(140, 145, 165, 230))
+        return bg.convert("RGB")
+
+    # ── SLIDE 2 / TEXT ONLY (TEXTO PURO EDITORIAL CENTRALIZADO) ──────────────
+    if not img_bytes or slide_idx in [2, 5, 8]:
+        # Header Center
+        h_text = "HAUCACAU"
+        h_bbox = draw.textbbox((0, 0), h_text, font=font_eyebrow)
+        hw = h_bbox[2] - h_bbox[0]
+        hx = (W - hw) // 2
+        draw.text((hx, 90), h_text, font=font_eyebrow, fill=(110, 115, 135, 240))
+        draw.line([(hx - 10, 122), (hx + hw + 10, 122)], fill=HAU_GOLD_MUTED, width=2)
+        
+        cur_y = 240
+        # Title paragraph
+        if title:
+            lines = wrap_words_bound(draw, title.lower(), font_body, max_w=840)
+            for l in lines:
+                l_bbox = draw.textbbox((0, 0), l, font=font_body)
+                lw = l_bbox[2] - l_bbox[0]
+                draw.text(((W - lw) // 2, cur_y), l, font=font_body, fill=DEEP_INDIGO)
+                cur_y += 66
+            cur_y += 48
+            
+        # Body paragraph (with generous gap so NEVER overlaps)
+        if body:
+            lines = wrap_words_bound(draw, body.lower(), font_body_reg, max_w=840)
+            for l in lines:
+                l_bbox = draw.textbbox((0, 0), l, font=font_body_reg)
+                lw = l_bbox[2] - l_bbox[0]
+                draw.text(((W - lw) // 2, cur_y), l, font=font_body_reg, fill=(70, 75, 95, 255))
+                cur_y += 58
+                
+        # Footer
+        draw.text(((W - 140) // 2, 1220), "@HAUCACAU", font=font_eyebrow, fill=DEEP_INDIGO)
+        draw.text(((W - 200) // 2, 1248), "ESTADO DE PRESENÇA", font=font_sub, fill=(140, 145, 165, 230))
+        return bg.convert("RGB")
+
+    # ── SLIDE 3 (GRAVURA BOTÂNICA / GEOMETRIA SAGRADA) ───────────────────────
+    if slide_idx == 3:
+        h_text = "HAUCACAU"
+        h_bbox = draw.textbbox((0, 0), h_text, font=font_eyebrow)
+        hw = h_bbox[2] - h_bbox[0]
+        hx = (W - hw) // 2
+        draw.text((hx, 90), h_text, font=font_eyebrow, fill=(110, 115, 135, 240))
+        draw.line([(hx - 10, 122), (hx + hw + 10, 122)], fill=HAU_GOLD_MUTED, width=2)
+        
+        cur_y = 170
+        if title:
+            for l in wrap_words_bound(draw, title.lower(), font_title, max_w=840):
+                l_bbox = draw.textbbox((0, 0), l, font=font_title)
+                lw = l_bbox[2] - l_bbox[0]
+                draw.text(((W - lw) // 2, cur_y), l, font=font_title, fill=DEEP_INDIGO)
+                cur_y += 68
+            cur_y += 30
+            
+        if body:
+            for l in wrap_words_bound(draw, body.lower(), font_body_reg, max_w=840):
+                l_bbox = draw.textbbox((0, 0), l, font=font_body_reg)
+                lw = l_bbox[2] - l_bbox[0]
+                draw.text(((W - lw) // 2, cur_y), l, font=font_body_reg, fill=(70, 75, 95, 255))
+                cur_y += 56
+                
+        draw_cacao_sacred_symbol(draw, cx=540, cy=860, size=160)
+        draw.text(((W - 140) // 2, 1220), "@HAUCACAU", font=font_eyebrow, fill=DEEP_INDIGO)
+        draw.text(((W - 200) // 2, 1248), "ESTADO DE PRESENÇA", font=font_sub, fill=(140, 145, 165, 230))
+        return bg.convert("RGB")
+
+    # ── SLIDE 4 / PORTAL FINE ART (CARD FLUTUANTE CENTRALIZADO) ──────────────
+    h_text = "HAUCACAU"
+    h_bbox = draw.textbbox((0, 0), h_text, font=font_eyebrow)
+    hw = h_bbox[2] - h_bbox[0]
+    hx = (W - hw) // 2
+    draw.text((hx, 90), h_text, font=font_eyebrow, fill=(110, 115, 135, 240))
+    draw.line([(hx - 10, 122), (hx + hw + 10, 122)], fill=HAU_GOLD_MUTED, width=2)
+    
+    cur_y = 160
+    if title:
+        for l in wrap_words_bound(draw, title.lower(), font_title, max_w=840):
+            l_bbox = draw.textbbox((0, 0), l, font=font_title)
+            lw = l_bbox[2] - l_bbox[0]
+            draw.text(((W - lw) // 2, cur_y), l, font=font_title, fill=DEEP_INDIGO)
+            cur_y += 68
+            
+    if img_bytes:
+        try:
+            art = Image.open(BytesIO(img_bytes)).convert("RGBA")
+            w, h = art.size
+            card_sz = 600
+            crop_box = (int(w * 0.1), int(h * 0.1), int(w * 0.9), int(h * 0.9))
+            art_crop = art.crop(crop_box).resize((card_sz, card_sz), Image.LANCZOS)
+            
+            card_x = (W - card_sz) // 2
+            card_y = 490
+            
+            shadow = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+            s_draw = ImageDraw.Draw(shadow)
+            s_draw.rectangle([card_x + 10, card_y + 16, card_x + card_sz + 10, card_y + card_sz + 16], fill=(20, 25, 45, 55))
+            shadow = shadow.filter(ImageFilter.GaussianBlur(radius=26))
+            bg.paste(shadow, (0, 0), shadow)
+            
+            mask = Image.new("L", (card_sz, card_sz), 0)
+            ImageDraw.Draw(mask).rounded_rectangle([0, 0, card_sz, card_sz], radius=16, fill=255)
+            bg.paste(art_crop, (card_x, card_y), mask)
+            draw.rounded_rectangle([card_x, card_y, card_x + card_sz, card_y + card_sz], radius=16, outline=HAU_GOLD_MUTED, width=1)
+        except Exception:
+            pass
+            
+    draw.text(((W - 140) // 2, 1220), "@HAUCACAU", font=font_eyebrow, fill=DEEP_INDIGO)
+    draw.text(((W - 200) // 2, 1248), "ESTADO DE PRESENÇA", font=font_sub, fill=(140, 145, 165, 230))
+    return bg.convert("RGB")
+
+
 # ── PUBLIC API ────────────────────────────────────────────────────────────────
 
 def compose(img_bytes, title, body, layout="fullbleed", preset_name=DEFAULT_PRESET,
             title_y=None, body_y=None, watermark_pos="top_left", watermark_x=None, watermark_y=None,
-            title_px=None, body_px=None, watermark_text=None):
+            title_px=None, body_px=None, watermark_text=None, slide_idx=1):
     """
     layout:
-      'fullbleed'   — clássico centralizado (todos os presets)
-      'dramatico'   — esquerda + grain + gradiente longo + texto ESQUERDA grande
-      'etereo'      — esquerda + suave + itálico (preset etereo_luminoso)
-      'text_only'   — texto pesado sem imagem real (qualquer preset)
-      'card'        — card arredondado + texto
-
-    preset_name:
-      'manuscrito_sagrado' | 'cinematografico' | 'cinematografico_crimson'
-      'esoterico_minimalista' | 'dramatico' | 'etereo_luminoso'
+      'fullbleed'       — clássico centralizado (todos os presets)
+      'dramatico'       — esquerda + grain + gradiente longo + texto ESQUERDA grande (HauCacau Realista)
+      'editorial_paper' — papel artesanal + tipografia fluida + colagem mística (HauCacau Criativo Fora da Caixa)
+      'etereo'          — esquerda + suave + itálico
+      'text_only'       — texto pesado sem imagem real
+      'card'            — card arredondado + texto
     """
     p = get_preset(preset_name).copy()
     
@@ -806,6 +1076,8 @@ def compose(img_bytes, title, body, layout="fullbleed", preset_name=DEFAULT_PRES
     if body_px is not None and str(body_px).strip() != "":
         p["body_px"] = int(body_px)
 
+    if layout == "editorial_paper" or preset_name == "criativo_papel":
+        return compose_editorial_paper(img_bytes, title, body, p, title_y, body_y, watermark_pos, watermark_x, watermark_y, watermark_text, slide_idx=slide_idx)
     if layout == "dramatico":
         return compose_dramatico(img_bytes, title, body, p, title_y, body_y, watermark_pos, watermark_x, watermark_y, watermark_text)
     if layout == "etereo":
@@ -816,32 +1088,3 @@ def compose(img_bytes, title, body, layout="fullbleed", preset_name=DEFAULT_PRES
         return compose_card(img_bytes, title, body, p, title_y, body_y, watermark_pos, watermark_x, watermark_y, watermark_text)
 
     return compose_fullbleed(img_bytes, title, body, p, title_y, body_y, watermark_pos, watermark_x, watermark_y, watermark_text)
-    """
-    layout:
-      'fullbleed'   — clássico centralizado (todos os presets)
-      'dramatico'   — esquerda + grain + gradiente longo + texto ESQUERDA grande
-      'etereo'      — esquerda + suave + itálico (preset etereo_luminoso)
-      'text_only'   — texto pesado sem imagem real (qualquer preset)
-      'card'        — card arredondado + texto
-
-    preset_name:
-      'manuscrito_sagrado' | 'cinematografico' | 'cinematografico_crimson'
-      'esoterico_minimalista' | 'dramatico' | 'etereo_luminoso'
-    """
-    p = get_preset(preset_name).copy()
-    
-    if title_px is not None and str(title_px).strip() != "":
-        p["title_px"] = int(title_px)
-    if body_px is not None and str(body_px).strip() != "":
-        p["body_px"] = int(body_px)
-
-    if layout == "dramatico":
-        return compose_dramatico(img_bytes, title, body, p, title_y, body_y, watermark_pos, watermark_x, watermark_y)
-    if layout == "etereo":
-        return compose_etereo(img_bytes, title, body, p, title_y, body_y, watermark_pos, watermark_x, watermark_y)
-    if layout == "text_only":
-        return compose_text_only(img_bytes, title, body, p, title_y, body_y, watermark_pos, watermark_x, watermark_y)
-    if layout == "card":
-        return compose_card(img_bytes, title, body, p, title_y, body_y, watermark_pos, watermark_x, watermark_y)
-
-    return compose_fullbleed(img_bytes, title, body, p, title_y, body_y, watermark_pos, watermark_x, watermark_y)

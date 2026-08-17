@@ -193,7 +193,7 @@ S8 CRISTALIZAÇÃO → síntese pura em 1-2 frases. O que corpo/campo/sistema ap
 
 S9 SETUP CTA → urgência de possibilidade SEM revelar produto. Usa linguagem de protocolo/frequência/resultado. Cria tensão de "existe algo". Exemplos: "Existe um protocolo específico para...", "Existe uma frequência que...", "Eu mapeei exatamente o que..."
 
-S10 CTA FIXO → INTOCÁVEL. TÍTULO: sempre "COMENTE\\nFONTE". CORPO: sempre "E eu te envio a Tecnologia Sonora capaz de [resultado específico do pilar] usando o Desbloqueio Neural."
+S10 CTA FIXO → INTOCÁVEL. TÍTULO: sempre "COMENTE\\nCACAU". CORPO: sempre "E eu te envio o link exclusivo para adquirir o ${product} e experimentar foco limpo, energia constante e desarmar a exaustão no seu dia a dia." VISUAL: O ${product} em destaque sob iluminação Caravaggio chiaroscuro facho de luz âmbar solar #F05B00.
 
 REGRA DE OSCILAÇÃO: ALTO (S1) → baixo (S2) → médio-alto raiva (S3) → fundo intelectual (S4) → fundo emocional mais fundo (S5) → reconhecimento (S6) → esperança (S7) → resolução (S8) → tensão possibilidade (S9) → portal (S10). NUNCA curva linear.
 
@@ -295,15 +295,15 @@ VISUAL: [...]
 
 [S10 — CTA FIXO | layout: fullbleed]
 TÍTULO: COMENTE
-FONTE
-CORPO: E eu te envio a Tecnologia Sonora capaz de [resultado específico do pilar] usando o Desbloqueio Neural.
-VISUAL: portal dourado puro, luz emanando do centro, fundo profundo escuro
+CACAU
+CORPO: E eu te envio o link exclusivo para adquirir o ${product} e experimentar foco limpo, energia constante e desarmar a exaustão no seu dia a dia.
+VISUAL: O ${product} em destaque sob iluminação Caravaggio chiaroscuro, facho de luz âmbar solar #F05B00 cortando o fundo escuro com sombras profundas e textura real da embalagem.
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 CAPTION (Instagram):
 [150-200 palavras. Emojis sutis. Hashtags no final.]
 
-CTA TRIBAL: "Comente FONTE se [experiência interna específica — estado que o seguidor carregava sem nome, não comportamento externo]"
+CTA TRIBAL: "Comente CACAU se [experiência interna específica — estado que o seguidor carregava sem nome, não comportamento externo]"
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 REVISÃO AUTÔNOMA:

@@ -195,10 +195,18 @@ export default function GeneralTab({
               <select
                 className="key-input"
                 value={settingsData?.activeCopyModel || 'gpt-4o'}
-                onChange={(e) => {
+                onChange={async (e) => {
                   const val = e.target.value;
                   setPendingUpdates(prev => ({ ...prev, COPY_GENERATION_MODEL: val }));
                   setSettingsData(prev => ({ ...prev, activeCopyModel: val }));
+                  try {
+                    await fetch('/api/settings/keys', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ COPY_GENERATION_MODEL: val })
+                    });
+                    if (showToast) showToast(`✓ Modelo de copy salvo: ${val.toUpperCase()}`);
+                  } catch (err) {}
                 }}
                 style={{ width: '100%', maxWidth: '400px', background: 'var(--bg)', color: 'var(--text)', border: '1px solid var(--border)', padding: '10px 14px', borderRadius: '6px', fontSize: '13px', outline: 'none', cursor: 'pointer' }}
               >
