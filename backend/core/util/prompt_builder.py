@@ -28,6 +28,21 @@ def build_prompt(slide_prompt: str, preset: str = "dramatico", slide_idx: int = 
     """
     import re
 
+    # PRESET: IDENTIDADE OFICIAL HAUCACAU (MINIMALISTA, SENSÍVEL & LUXO SILENCIOSO)
+    if preset == "identidade_oficial":
+        if slide_idx == 1:
+            return (
+                "Minimalist ethereal dark silhouette of a serene human presence sitting in deep calm and presence, "
+                "surrounded by a very soft subtle turquoise teal aura (#4EB8AC) and dark midnight navy blue atmospheric background (#191F3F). "
+                "Quiet luxury, fine art photograph, extremely minimal, clean, no text, no letters, no logos, no 3D cartoon."
+            )
+        else:
+            return (
+                "Minimalist ethereal abstract fine art background with soft ambient solar golden light (#F7A100) "
+                "and subtle turquoise teal mist (#4EB8AC) over midnight deep navy blue (#191F3F), quiet luxury, fine art. "
+                "Absolutely no text, no letters, no words, no logos, no 3D cartoon."
+            )
+
     # PRESET: CRIATIVO FORA DA CAIXA (EDITORIAL MÍSTICO EM PAPEL)
     if preset == "criativo_papel" or preset == "editorial_paper":
         if slide_idx == 1:

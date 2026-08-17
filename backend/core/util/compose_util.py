@@ -1064,7 +1064,7 @@ def compose_haucacau_identidade(img_bytes, title, body, p, title_y=None, body_y=
     Novo Motor Editorial HauCacau:
     - 1080x1350 px (4:5 vertical)
     - Respiração nobre, sensibilidade poética, zero poluição visual.
-    - S1: Capa noturna Índigo (#191F3F) + aura suave turquesa (#4EB8AC) + tipografia sensível + lineworks dourados.
+    - S1: Capa noturna Índigo (#191F3F) + aura suave turquesa (#4EB8AC) + silhueta suave + tipografia sensível + lineworks dourados.
     - S2 a S9: Linho creme respirando (#F6F3ED) ou Índigo com casamento tipográfico e botânica refinada.
     - S10: CTA oficial com triângulo Hau e conversão tribal.
     """
@@ -1079,6 +1079,12 @@ def compose_haucacau_identidade(img_bytes, title, body, p, title_y=None, body_y=
     
     if is_dark:
         bg = Image.new("RGBA", (W, H), DEEP_INDIGO)
+        if img_bytes:
+            try:
+                raw_art = Image.open(BytesIO(img_bytes)).convert("RGBA").resize((W, H), Image.LANCZOS)
+                bg = Image.blend(bg, raw_art, alpha=0.42)
+            except Exception:
+                pass
         glow = Image.new("RGBA", (W, H), (0, 0, 0, 0))
         g_draw = ImageDraw.Draw(glow)
         g_draw.ellipse([W//2 - 350, H//2 - 350, W//2 + 350, H//2 + 350], fill=(78, 184, 172, 35))
@@ -1099,7 +1105,7 @@ def compose_haucacau_identidade(img_bytes, title, body, p, title_y=None, body_y=
     font_eyebrow = ImageFont.truetype(F_BOLD, 22)
     font_sub     = ImageFont.truetype(F_REGULAR, 17)
     font_bold    = ImageFont.truetype(F_BOLD, 52)
-    font_reg     = ImageFont.truetype(F_REGULAR, 36)
+    font_reg     = ImageFont.truetype(F_REGULAR, 34)
     font_italic  = ImageFont.truetype(F_HEAVY_IT, 48)
     
     # 1. Header Minimalista Centralizado
@@ -1116,9 +1122,9 @@ def compose_haucacau_identidade(img_bytes, title, body, p, title_y=None, body_y=
         dx = math.cos(rad) * 160
         dy = math.sin(rad) * 200
         col = (205, 145, 60, 110) if is_dark else (140, 125, 100, 85)
-        # Top Left
+        # Top Left / Right
         draw.line([(60, 60), (60 + dx, 60 + dy)], fill=col, width=2)
-        # Bottom Right
+        # Bottom Right / Left
         col_br = (78, 184, 172, 90) if is_dark else (140, 125, 100, 85)
         draw.line([(W - 60, H - 120), (W - 60 - dx, H - 120 - dy)], fill=col_br, width=2)
         

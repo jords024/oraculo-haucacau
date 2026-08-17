@@ -319,13 +319,13 @@ export default function App() {
       return;
     }
 
-    const currentStyle = extraOpts?.visualStyle || localStorage.getItem('haucacau_visual_style') || 'criativo_papel';
+    const currentStyle = extraOpts?.visualStyle || localStorage.getItem('haucacau_visual_style') || 'identidade_oficial';
     payload.preset = currentStyle;
     if (payload.slides && payload.slides.length > 0) {
       payload.slides = payload.slides.map(s => ({
         ...s,
         preset: currentStyle,
-        layout: s.layout || (currentStyle === 'criativo_papel' ? 'editorial_paper' : 'dramatico')
+        layout: currentStyle === 'identidade_oficial' ? 'identidade_oficial' : (currentStyle === 'criativo_papel' ? 'editorial_paper' : (s.layout || 'dramatico'))
       }));
     }
 
