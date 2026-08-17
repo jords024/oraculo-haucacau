@@ -1055,6 +1055,114 @@ def compose_editorial_paper(img_bytes, title, body, preset: dict, title_y=None, 
     return bg.convert("RGB")
 
 
+# ── COMPOSE HAUCACAU IDENTIDADE OFICIAL (MINIMALISTA & SENSÍVEL) ───────────────
+
+def compose_haucacau_identidade(img_bytes, title, body, p, title_y=None, body_y=None,
+                                watermark_pos="top_left", watermark_x=None, watermark_y=None,
+                                watermark_text=None, slide_idx=1):
+    """
+    Novo Motor Editorial HauCacau:
+    - 1080x1350 px (4:5 vertical)
+    - Respiração nobre, sensibilidade poética, zero poluição visual.
+    - S1: Capa noturna Índigo (#191F3F) + aura suave turquesa (#4EB8AC) + tipografia sensível + lineworks dourados.
+    - S2 a S9: Linho creme respirando (#F6F3ED) ou Índigo com casamento tipográfico e botânica refinada.
+    - S10: CTA oficial com triângulo Hau e conversão tribal.
+    """
+    is_dark = (slide_idx == 1 or slide_idx % 2 != 0)
+    
+    DEEP_INDIGO = (25, 31, 63, 255)       # #191F3F
+    WARM_CREAM  = (246, 243, 237, 255)   # #F6F3ED
+    HAU_GOLD    = (205, 145, 60, 255)     # #CD913C
+    HAU_SOLAR   = (247, 161, 0, 255)      # #F7A100
+    TEXT_WHITE  = (245, 245, 245, 255)
+    TEXT_DARK   = (28, 32, 48, 255)
+    
+    if is_dark:
+        bg = Image.new("RGBA", (W, H), DEEP_INDIGO)
+        glow = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+        g_draw = ImageDraw.Draw(glow)
+        g_draw.ellipse([W//2 - 350, H//2 - 350, W//2 + 350, H//2 + 350], fill=(78, 184, 172, 35))
+        glow = glow.filter(ImageFilter.GaussianBlur(radius=120))
+        bg = Image.alpha_composite(bg, glow)
+    else:
+        bg = Image.new("RGBA", (W, H), WARM_CREAM)
+        
+    # Micro-textura orgânica
+    noise = np.random.normal(0, 3, (H, W)).astype(np.int16)
+    arr = np.array(bg).astype(np.int16)
+    for c in range(3):
+        arr[:, :, c] = np.clip(arr[:, :, c] + noise, 0, 255)
+    bg = Image.fromarray(arr.astype(np.uint8), "RGBA")
+    draw = ImageDraw.Draw(bg, "RGBA")
+    
+    # Fontes
+    font_eyebrow = ImageFont.truetype(F_BOLD, 22)
+    font_sub     = ImageFont.truetype(F_REGULAR, 17)
+    font_bold    = ImageFont.truetype(F_BOLD, 52)
+    font_reg     = ImageFont.truetype(F_REGULAR, 36)
+    font_italic  = ImageFont.truetype(F_HEAVY_IT, 48)
+    
+    # 1. Header Minimalista Centralizado
+    h_text = "HAUCACAU"
+    h_bbox = draw.textbbox((0, 0), h_text, font=font_eyebrow)
+    hw = h_bbox[2] - h_bbox[0]
+    hx = (W - hw) // 2
+    draw.text((hx, 90), h_text, font=font_eyebrow, fill=HAU_GOLD)
+    draw.line([(hx - 12, 122), (hx + hw + 12, 122)], fill=HAU_GOLD, width=1)
+    
+    # 2. Linework Botânico Elegante nos Cantos
+    for angle in [15, 35, 55, 75]:
+        rad = math.radians(angle)
+        dx = math.cos(rad) * 160
+        dy = math.sin(rad) * 200
+        col = (205, 145, 60, 110) if is_dark else (140, 125, 100, 85)
+        # Top Left
+        draw.line([(60, 60), (60 + dx, 60 + dy)], fill=col, width=2)
+        # Bottom Right
+        col_br = (78, 184, 172, 90) if is_dark else (140, 125, 100, 85)
+        draw.line([(W - 60, H - 120), (W - 60 - dx, H - 120 - dy)], fill=col_br, width=2)
+        
+    # 3. Tipografia com Respiro Nobre
+    cur_y = 440 if slide_idx == 1 else 380
+    
+    if title:
+        title_lines = wrap_words_bound(draw, title.lower(), font_bold, max_w=840)
+        for l in title_lines:
+            l_bbox = draw.textbbox((0, 0), l, font=font_bold)
+            lw = l_bbox[2] - l_bbox[0]
+            draw.text(((W - lw) // 2, cur_y), l, font=font_bold, fill=TEXT_WHITE if is_dark else TEXT_DARK)
+            cur_y += 70
+        cur_y += 24
+        
+    if body:
+        # Se contiver itálico ou frase de virada
+        lines = wrap_words_bound(draw, body.lower(), font_italic if slide_idx == 1 else font_reg, max_w=840)
+        for l in lines:
+            f_use = font_italic if slide_idx == 1 else font_reg
+            l_bbox = draw.textbbox((0, 0), l, font=f_use)
+            lw = l_bbox[2] - l_bbox[0]
+            fill_col = HAU_SOLAR if (is_dark and slide_idx == 1) else (HAU_GOLD if slide_idx == 1 else (TEXT_WHITE if is_dark else (90, 95, 110, 240)))
+            draw.text(((W - lw) // 2, cur_y), l, font=f_use, fill=fill_col)
+            cur_y += 62
+            
+    # 4. Monograma Sagrado Hau & Footer
+    cx, cy = W // 2, 1200
+    size = 24
+    h_tri = size * (math.sqrt(3) / 2)
+    p1 = (cx, cy - h_tri * (2/3))
+    p2 = (cx - size / 2, cy + h_tri * (1/3))
+    p3 = (cx + size / 2, cy + h_tri * (1/3))
+    draw.line([p1, p2, p3, p1], fill=HAU_GOLD, width=2)
+    draw.arc([cx - size/3, cy - size/6, cx + size/3, cy + h_tri/3], start=0, end=180, fill=HAU_GOLD, width=2)
+    
+    footer_text = "@haucacau · estado de presença"
+    f_bbox = draw.textbbox((0, 0), footer_text, font=font_sub)
+    fw = f_bbox[2] - f_bbox[0]
+    draw.text(((W - fw) // 2, 1235), footer_text, font=font_sub, fill=(180, 185, 205, 220) if is_dark else (120, 120, 130, 220))
+    
+    return bg.convert("RGB")
+
+
 # ── PUBLIC API ────────────────────────────────────────────────────────────────
 
 def compose(img_bytes, title, body, layout="fullbleed", preset_name=DEFAULT_PRESET,
@@ -1062,12 +1170,13 @@ def compose(img_bytes, title, body, layout="fullbleed", preset_name=DEFAULT_PRES
             title_px=None, body_px=None, watermark_text=None, slide_idx=1):
     """
     layout:
-      'fullbleed'       — clássico centralizado (todos os presets)
-      'dramatico'       — esquerda + grain + gradiente longo + texto ESQUERDA grande (HauCacau Realista)
-      'editorial_paper' — papel artesanal + tipografia fluida + colagem mística (HauCacau Criativo Fora da Caixa)
-      'etereo'          — esquerda + suave + itálico
-      'text_only'       — texto pesado sem imagem real
-      'card'            — card arredondado + texto
+      'fullbleed'           — clássico centralizado (todos os presets)
+      'identidade_oficial'  — novo padrão sensível e minimalista oficial HauCacau (1080x1350)
+      'editorial_paper'     — papel artesanal + colagem mística (HauCacau Criativo)
+      'dramatico'           — esquerda + grain + 35mm Caravaggio (HauCacau Realista)
+      'etereo'              — esquerda + suave + itálico
+      'text_only'           — texto pesado sem imagem real
+      'card'                — card arredondado + texto
     """
     p = get_preset(preset_name).copy()
     
@@ -1076,6 +1185,8 @@ def compose(img_bytes, title, body, layout="fullbleed", preset_name=DEFAULT_PRES
     if body_px is not None and str(body_px).strip() != "":
         p["body_px"] = int(body_px)
 
+    if layout == "identidade_oficial" or preset_name == "identidade_oficial":
+        return compose_haucacau_identidade(img_bytes, title, body, p, title_y, body_y, watermark_pos, watermark_x, watermark_y, watermark_text, slide_idx=slide_idx)
     if layout == "editorial_paper" or preset_name == "criativo_papel":
         return compose_editorial_paper(img_bytes, title, body, p, title_y, body_y, watermark_pos, watermark_x, watermark_y, watermark_text, slide_idx=slide_idx)
     if layout == "dramatico":
@@ -1088,3 +1199,4 @@ def compose(img_bytes, title, body, layout="fullbleed", preset_name=DEFAULT_PRES
         return compose_card(img_bytes, title, body, p, title_y, body_y, watermark_pos, watermark_x, watermark_y, watermark_text)
 
     return compose_fullbleed(img_bytes, title, body, p, title_y, body_y, watermark_pos, watermark_x, watermark_y, watermark_text)
+

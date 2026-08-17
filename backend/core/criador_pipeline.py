@@ -113,7 +113,7 @@ def fetch_image_for_slide(args_tuple):
     """
     idx, s = args_tuple
     layout = s.get("layout", "fullbleed")
-    preset = s.get("preset", "dramatico")
+    preset = s.get("preset", "identidade_oficial")
     if layout == "text_only" or (preset in ["criativo_papel", "editorial_paper"] and idx in [2, 3, 5, 8]):
         return idx, None
     prompt = s.get("prompt", "")
@@ -214,8 +214,8 @@ def main():
         body    = s.get("body", "")
         img_bytes = raw_images.get(idx)
 
-        preset = s.get("preset", "dramatico")
-        layout_mode = "editorial_paper" if preset in ["criativo_papel", "editorial_paper"] else (layout if layout in ["dramatico", "etereo", "card", "text_only", "fullbleed"] else "dramatico")
+        preset = s.get("preset", "identidade_oficial")
+        layout_mode = "identidade_oficial" if preset == "identidade_oficial" else ("editorial_paper" if preset in ["criativo_papel", "editorial_paper"] else (layout if layout in ["dramatico", "etereo", "card", "text_only", "fullbleed"] else "dramatico"))
         if layout_mode == "text_only" or (preset in ["criativo_papel", "editorial_paper"] and idx in [2, 3, 5, 8]):
             img_bytes = None
 

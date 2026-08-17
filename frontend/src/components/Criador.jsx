@@ -33,12 +33,17 @@ export default function Criador({ onStartGeneration, showToast, shouldAddFormMes
   const scrollAnchorRef = useRef(null);
 
   const [selectedModel, setSelectedModel] = useState('gpt-4o');
-  const [visualStyle, setVisualStyle] = useState(() => localStorage.getItem('haucacau_visual_style') || 'criativo_papel');
+  const [visualStyle, setVisualStyle] = useState(() => localStorage.getItem('haucacau_visual_style') || 'identidade_oficial');
 
   const handleStyleChange = (styleKey) => {
     setVisualStyle(styleKey);
     localStorage.setItem('haucacau_visual_style', styleKey);
-    if (showToast) showToast(`Estilo visual alterado para: ${styleKey === 'criativo_papel' ? 'Criativo (Fora da Caixa)' : 'Realista'}`);
+    const labels = {
+      identidade_oficial: '🌿 Identidade HauCacau (Oficial)',
+      criativo_papel: '📜 Criativo (Papel & Símbolos)',
+      dramatico: '🌑 Realista (35mm)'
+    };
+    if (showToast) showToast(`Estilo visual alterado para: ${labels[styleKey] || styleKey}`);
   };
 
   useEffect(() => {
@@ -332,6 +337,26 @@ export default function Criador({ onStartGeneration, showToast, shouldAddFormMes
           {/* SELETOR DE PRESETS VISUAIS HAUCACAU */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'rgba(255, 255, 255, 0.04)', padding: '3px 6px', borderRadius: '8px', border: '1px solid rgba(255, 255, 255, 0.1)' }}>
             <span style={{ fontSize: '11px', color: 'rgba(255, 255, 255, 0.5)', fontWeight: 600, paddingLeft: '4px' }}>ESTILO VISUAL:</span>
+            <button
+              type="button"
+              onClick={() => handleStyleChange('identidade_oficial')}
+              style={{
+                background: visualStyle === 'identidade_oficial' ? 'rgba(78, 184, 172, 0.25)' : 'transparent',
+                border: visualStyle === 'identidade_oficial' ? '1px solid #4EB8AC' : '1px solid transparent',
+                color: visualStyle === 'identidade_oficial' ? '#4EB8AC' : 'rgba(255, 255, 255, 0.6)',
+                fontSize: '11px',
+                fontWeight: 600,
+                padding: '4px 10px',
+                borderRadius: '5px',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '5px',
+                transition: 'all 0.2s ease'
+              }}
+            >
+              <span>🌿</span> Identidade HauCacau (Oficial)
+            </button>
             <button
               type="button"
               onClick={() => handleStyleChange('criativo_papel')}
