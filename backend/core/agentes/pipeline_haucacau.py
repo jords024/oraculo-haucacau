@@ -101,80 +101,29 @@ def run_pipeline(tema: str, universo: int = 2, avatar: str = "A",
 
 
 def compor_slide(slide: dict, out_dir: Path, num: int) -> Path:
-    """Gera a imagem e compõe o slide com Pillow."""
-    from PIL import Image, ImageDraw, ImageFont
+    """Gera a imagem e compõe o slide com o motor oficial HauCacau."""
+    from io import BytesIO
+    from core.util.compose_util import compose
 
     W, H = 1080, 1350
-    layout = slide.get("layout", "fullbleed")
+    layout = slide.get("layout", "identidade_oficial")
     titulo = slide.get("titulo", "")
     corpo  = slide.get("corpo", "")
 
-    # ── Tenta gerar imagem via IA ──────────────────────────────────────────
-    img_bg = None
+    img_bytes = None
     prompt = slide.get("prompt_imagem")
-    if prompt and layout != "text_only":
+    if prompt and layout != "text_only" and num == 1:
         try:
-            img_bg = _gerar_imagem(prompt, W, H)
+            img = _gerar_imagem(prompt, W, H)
+            buf = BytesIO()
+            img.save(buf, format="JPEG")
+            img_bytes = buf.getvalue()
         except Exception as e:
-            _print({"type": "log", "msg": f"  Imagem S{num}: {e} — usando fundo sólido"})
+            _print({"type": "log", "msg": f"  Imagem S{num}: {e}"})
 
-    # ── Cria canvas ───────────────────────────────────────────────────────
-    if img_bg:
-        canvas = img_bg.convert("RGBA").resize((W, H))
-    else:
-        # Fundo padrão HauCacau: marrom cacau quente
-        canvas = Image.new("RGBA", (W, H), (59, 31, 14, 255))
-
-    draw = ImageDraw.Draw(canvas)
-
-    # ── Overlay gradiente ─────────────────────────────────────────────────
-    overlay = Image.new("RGBA", (W, H), (0, 0, 0, 0))
-    ov_draw = ImageDraw.Draw(overlay)
-    for y in range(H // 2, H):
-        alpha = int(180 * (y - H // 2) / (H // 2))
-        ov_draw.rectangle([(0, y), (W, y)], fill=(0, 0, 0, alpha))
-    canvas = Image.alpha_composite(canvas, overlay)
-    draw = ImageDraw.Draw(canvas)
-
-    # ── Tipografia ────────────────────────────────────────────────────────
-    FD = Path("C:/Windows/Fonts") if IS_WIN else Path("/usr/share/fonts/truetype")
-    FONT_TITLE = _find_font(FD, ["arialbd.ttf", "DejaVuSans-Bold.ttf", "NotoSans-Bold.ttf"])
-    FONT_BODY  = _find_font(FD, ["arial.ttf",   "DejaVuSans.ttf",      "NotoSans-Regular.ttf"])
-
-    WHITE     = (255, 255, 255, 255)
-    AMBER     = (196, 122, 43, 255)
-    CREAM     = (245, 230, 200, 220)
-
-    # Número do slide (topo esquerdo)
-    num_font = ImageFont.truetype(str(FONT_BODY), 22) if FONT_BODY else ImageFont.load_default()
-    draw.text((40, 40), f"{num:02d} / {slide.get('total', 11)}", font=num_font, fill=AMBER[:3] + (180,))
-
-    # Título
-    title_font = ImageFont.truetype(str(FONT_TITLE), 62) if FONT_TITLE else ImageFont.load_default()
-    lines = titulo.split("\n") if "\n" in titulo else _wrap(titulo, 28)
-    y_title = H - 520
-    for line in lines[:4]:
-        draw.text((60, y_title), line, font=title_font, fill=WHITE)
-        y_title += 72
-
-    # Corpo
-    body_font = ImageFont.truetype(str(FONT_BODY), 30) if FONT_BODY else ImageFont.load_default()
-    body_lines = []
-    for par in corpo.split("\n"):
-        body_lines.extend(_wrap(par.strip(), 48) or [""])
-    y_body = y_title + 20
-    for line in body_lines[:12]:
-        draw.text((60, y_body), line, font=body_font, fill=CREAM)
-        y_body += 40
-        if y_body > H - 80:
-            break
-
-    # Logo / marca d'água
-    draw.text((W - 180, H - 50), "HauCacau", font=num_font, fill=AMBER[:3] + (120,))
-
-    # Salva
-    out = out_dir / f"slide_{num:02d}.png"
-    canvas.convert("RGB").save(str(out), "PNG", quality=95)
+    final_img = compose(img_bytes, titulo, corpo, layout="identidade_oficial", preset_name="identidade_oficial", slide_idx=num)
+    out = out_dir / f"slide_{num:02d}.jpg"
+    final_img.save(str(out), "JPEG", quality=95)
     return out
 
 
