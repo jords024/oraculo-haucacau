@@ -1057,16 +1057,27 @@ def compose_editorial_paper(img_bytes, title, body, preset: dict, title_y=None, 
 
 # ── COMPOSE HAUCACAU IDENTIDADE OFICIAL (MINIMALISTA & SENSÍVEL) ───────────────
 
+def _draw_hau_botanical_corner(draw, origin_x, origin_y, flip_x=False, flip_y=False, color=(205, 145, 60, 90)):
+    for angle in [15, 35, 55, 75]:
+        rad = math.radians(angle)
+        dx = math.cos(rad) * 180 * (-1 if flip_x else 1)
+        dy = math.sin(rad) * 220 * (-1 if flip_y else 1)
+        # Stem
+        draw.line([(origin_x, origin_y), (origin_x + dx, origin_y + dy)], fill=color, width=2)
+        # Leaf oval
+        mid_x = origin_x + dx * 0.6
+        mid_y = origin_y + dy * 0.6
+        lx = origin_x + dx
+        ly = origin_y + dy
+        draw.arc([min(mid_x, lx) - 20, min(mid_y, ly) - 30, max(mid_x, lx) + 20, max(mid_y, ly) + 30], start=0, end=360, fill=color, width=1)
+
+
 def compose_haucacau_identidade(img_bytes, title, body, p, title_y=None, body_y=None,
                                 watermark_pos="top_left", watermark_x=None, watermark_y=None,
                                 watermark_text=None, slide_idx=1):
     """
-    Novo Motor Editorial HauCacau:
-    - 1080x1350 px (4:5 vertical)
-    - Respiração nobre, sensibilidade poética, zero poluição visual.
-    - S1: Capa noturna Índigo (#191F3F) + aura suave turquesa (#4EB8AC) + silhueta suave + tipografia sensível + lineworks dourados.
-    - S2 a S9: Linho creme respirando (#F6F3ED) ou Índigo com casamento tipográfico e botânica refinada.
-    - S10: CTA oficial com triângulo Hau e conversão tribal.
+    Motor Editorial Oficial HauCacau (1080x1350 px):
+    Fiel às imagens aprovadas (noturno e linho claro com respiro nobre).
     """
     is_dark = (slide_idx == 1 or slide_idx % 2 != 0)
     
@@ -1082,7 +1093,7 @@ def compose_haucacau_identidade(img_bytes, title, body, p, title_y=None, body_y=
         if img_bytes:
             try:
                 raw_art = Image.open(BytesIO(img_bytes)).convert("RGBA").resize((W, H), Image.LANCZOS)
-                bg = Image.blend(bg, raw_art, alpha=0.42)
+                bg = Image.blend(bg, raw_art, alpha=0.45)
             except Exception:
                 pass
         glow = Image.new("RGBA", (W, H), (0, 0, 0, 0))
@@ -1101,12 +1112,12 @@ def compose_haucacau_identidade(img_bytes, title, body, p, title_y=None, body_y=
     bg = Image.fromarray(arr.astype(np.uint8), "RGBA")
     draw = ImageDraw.Draw(bg, "RGBA")
     
-    # Fontes
-    font_eyebrow = ImageFont.truetype(F_BOLD, 22)
-    font_sub     = ImageFont.truetype(F_REGULAR, 17)
-    font_bold    = ImageFont.truetype(F_BOLD, 52)
-    font_reg     = ImageFont.truetype(F_REGULAR, 34)
-    font_italic  = ImageFont.truetype(F_HEAVY_IT, 48)
+    # Fontes com resolução Windows / Linux
+    font_eyebrow = ImageFont.truetype("C:/Windows/Fonts/arial.ttf", 22) if IS_WIN else ImageFont.truetype(F_REGULAR, 22)
+    font_sub     = ImageFont.truetype("C:/Windows/Fonts/arial.ttf", 16) if IS_WIN else ImageFont.truetype(F_REGULAR, 16)
+    font_bold    = ImageFont.truetype("C:/Windows/Fonts/arialbd.ttf", 50) if IS_WIN else ImageFont.truetype(F_BOLD, 50)
+    font_reg     = ImageFont.truetype("C:/Windows/Fonts/arial.ttf", 34) if IS_WIN else ImageFont.truetype(F_REGULAR, 34)
+    font_italic  = ImageFont.truetype("C:/Windows/Fonts/georgiai.ttf", 50) if IS_WIN else ImageFont.truetype(F_HEAVY_IT, 50)
     
     # 1. Header Minimalista Centralizado
     h_text = "HAUCACAU"
@@ -1114,22 +1125,18 @@ def compose_haucacau_identidade(img_bytes, title, body, p, title_y=None, body_y=
     hw = h_bbox[2] - h_bbox[0]
     hx = (W - hw) // 2
     draw.text((hx, 90), h_text, font=font_eyebrow, fill=HAU_GOLD)
-    draw.line([(hx - 12, 122), (hx + hw + 12, 122)], fill=HAU_GOLD, width=1)
+    draw.line([(hx - 10, 122), (hx + hw + 10, 122)], fill=HAU_GOLD, width=1)
     
     # 2. Linework Botânico Elegante nos Cantos
-    for angle in [15, 35, 55, 75]:
-        rad = math.radians(angle)
-        dx = math.cos(rad) * 160
-        dy = math.sin(rad) * 200
-        col = (205, 145, 60, 110) if is_dark else (140, 125, 100, 85)
-        # Top Left / Right
-        draw.line([(60, 60), (60 + dx, 60 + dy)], fill=col, width=2)
-        # Bottom Right / Left
-        col_br = (78, 184, 172, 90) if is_dark else (140, 125, 100, 85)
-        draw.line([(W - 60, H - 120), (W - 60 - dx, H - 120 - dy)], fill=col_br, width=2)
+    if is_dark:
+        _draw_hau_botanical_corner(draw, 60, 60, flip_x=False, flip_y=False, color=(205, 145, 60, 110))
+        _draw_hau_botanical_corner(draw, W - 60, H - 120, flip_x=True, flip_y=True, color=(78, 184, 172, 90))
+    else:
+        _draw_hau_botanical_corner(draw, W - 60, 60, flip_x=True, flip_y=False, color=(140, 125, 100, 90))
+        _draw_hau_botanical_corner(draw, 60, H - 120, flip_x=False, flip_y=True, color=(140, 125, 100, 90))
         
     # 3. Tipografia com Respiro Nobre
-    cur_y = 440 if slide_idx == 1 else 380
+    cur_y = 460 if slide_idx == 1 else 400
     
     if title:
         title_lines = wrap_words_bound(draw, title.lower(), font_bold, max_w=840)
@@ -1137,19 +1144,25 @@ def compose_haucacau_identidade(img_bytes, title, body, p, title_y=None, body_y=
             l_bbox = draw.textbbox((0, 0), l, font=font_bold)
             lw = l_bbox[2] - l_bbox[0]
             draw.text(((W - lw) // 2, cur_y), l, font=font_bold, fill=TEXT_WHITE if is_dark else TEXT_DARK)
-            cur_y += 70
+            cur_y += 68
         cur_y += 24
         
     if body:
-        # Se contiver itálico ou frase de virada
-        lines = wrap_words_bound(draw, body.lower(), font_italic if slide_idx == 1 else font_reg, max_w=840)
+        # No slide 1 ou se contiver frase poética, renderiza em itálico de luxo
+        is_poetic_hook = (slide_idx == 1 or len(body.split()) <= 14)
+        use_font = font_italic if is_poetic_hook else font_reg
+        lines = wrap_words_bound(draw, body.lower(), use_font, max_w=840)
         for l in lines:
-            f_use = font_italic if slide_idx == 1 else font_reg
-            l_bbox = draw.textbbox((0, 0), l, font=f_use)
+            l_bbox = draw.textbbox((0, 0), l, font=use_font)
             lw = l_bbox[2] - l_bbox[0]
-            fill_col = HAU_SOLAR if (is_dark and slide_idx == 1) else (HAU_GOLD if slide_idx == 1 else (TEXT_WHITE if is_dark else (90, 95, 110, 240)))
-            draw.text(((W - lw) // 2, cur_y), l, font=f_use, fill=fill_col)
-            cur_y += 62
+            if is_poetic_hook:
+                fill_col = HAU_SOLAR if is_dark else HAU_GOLD
+                line_gap = 72
+            else:
+                fill_col = (200, 205, 225, 240) if is_dark else (90, 95, 110, 240)
+                line_gap = 48
+            draw.text(((W - lw) // 2, cur_y), l, font=use_font, fill=fill_col)
+            cur_y += line_gap
             
     # 4. Monograma Sagrado Hau & Footer
     cx, cy = W // 2, 1200

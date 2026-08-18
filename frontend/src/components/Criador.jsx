@@ -259,7 +259,7 @@ export default function Criador({ onStartGeneration, showToast, shouldAddFormMes
     // 1. Tenta extrair slides da mensagem atual
     let parsed = parseCarouselText(messageContent, activeBriefing);
     if (parsed && parsed.slides && parsed.slides.length > 0) {
-      onStartGeneration(messageContent, currentCarouselId);
+      onStartGeneration(messageContent, currentCarouselId, { visualStyle });
       return;
     }
 
@@ -269,7 +269,7 @@ export default function Criador({ onStartGeneration, showToast, shouldAddFormMes
       if (msg.role === 'ai' && msg.content) {
         parsed = parseCarouselText(msg.content, activeBriefing);
         if (parsed && parsed.slides && parsed.slides.length > 0) {
-          onStartGeneration(msg.content, currentCarouselId);
+          onStartGeneration(msg.content, currentCarouselId, { visualStyle });
           return;
         }
       }
